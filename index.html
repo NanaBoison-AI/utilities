@@ -6,6 +6,8 @@
     <title>NanaBoison Utilities</title>
     <!-- Tailwind CSS CDN for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome CDN for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         /* Custom font for a clean look */
         body {
@@ -13,8 +15,9 @@
         }
         /* Custom styles for the textarea to ensure it's readable */
         textarea {
-            resize: vertical; /* Allow vertical resizing */
-            min-height: 150px; /* Minimum height */
+            resize: vertical; /* Allow vertical resizing for user */
+            min-height: 150px; /* Minimum height for all textareas, except where specifically overridden */
+            overflow: auto; /* Default to auto scroll if content exceeds size */
         }
         .tab-button.active {
             background-color: #3B82F6; /* blue-600 */
@@ -24,7 +27,7 @@
     </style>
 </head>
 <body class="bg-gradient-to-br from-blue-100 to-purple-200 min-h-screen flex items-center justify-center p-4">
-    <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-2xl text-center border border-gray-200">
+    <div class="bg-white p-8 rounded-xl shadow-2xl w-full md:w-4/5 lg:w-3/4 text-center border border-gray-200">
         <h1 class="text-3xl font-extrabold text-gray-800 mb-6">NanaBoison Utilities</h1>
 
         <!-- Navigation Tabs -->
@@ -123,37 +126,58 @@
         <div id="jsonBeautifierSection" class="converter-section hidden">
             <p class="text-gray-600 mb-8">Paste your JSON string below to lint and beautify it.</p>
 
-            <label for="jsonInputToBeautify" class="block text-gray-700 text-sm font-bold mb-2 text-left">Input JSON String:</label>
-            <textarea
-                id="jsonInputToBeautify"
-                class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
-                placeholder='e.g., {"name":"John Doe","age":30,"city":"New York"}'
-            ></textarea>
+            <!-- Buttons at the top, side-by-side -->
+            <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 mb-6">
+                <button
+                    id="beautifyJsonButton"
+                    class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full
+                           shadow-lg transform transition-all duration-200 ease-in-out
+                           hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 flex items-center justify-center space-x-2"
+                >
+                    <i class="fas fa-code"></i> <span>Lint & Beautify</span>
+                </button>
 
-            <button
-                id="beautifyJsonButton"
-                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full
-                       shadow-lg transform transition-all duration-200 ease-in-out
-                       hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 mb-6"
-            >
-                Lint & Beautify JSON
-            </button>
-
-            <div id="beautifiedJsonOutputContainer" class="hidden mt-6 text-left">
-                <label for="beautifiedJsonOutput" class="block text-gray-700 text-sm font-bold mb-2">Beautified JSON:</label>
-                <textarea
-                    id="beautifiedJsonOutput"
-                    class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    readonly
-                ></textarea>
                 <button
                     id="downloadBeautifiedJsonButton"
-                    class="mt-4 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-5 rounded-full
+                    class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-full
                            shadow-md transform transition-all duration-200 ease-in-out
-                           hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300"
+                           hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300 hidden flex items-center justify-center space-x-2"
                 >
-                    Download Beautified JSON
+                    <i class="fas fa-download"></i> <span>Download JSON</span>
                 </button>
+
+                <button
+                    id="copyBeautifiedJsonButton"
+                    class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-full
+                           shadow-md transform transition-all duration-200 ease-in-out
+                           hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-300 hidden flex items-center justify-center space-x-2"
+                >
+                    <i class="fas fa-copy"></i> <span>Copy JSON</span>
+                </button>
+            </div>
+
+            <!-- Container for side-by-side text areas -->
+            <div class="flex flex-col md:flex-row md:space-x-4 mb-6">
+                <!-- Input JSON String Column -->
+                <div class="flex-1 w-full md:w-1/2 mb-4 md:mb-0">
+                    <label for="jsonInputToBeautify" class="block text-gray-700 text-sm font-bold mb-2 text-left">Input JSON String:</label>
+                    <textarea
+                        id="jsonInputToBeautify"
+                        class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[300px]"
+                        placeholder='e.g., {"name":"John Doe","age":30,"city":"New York"}'
+                    ></textarea>
+                </div>
+
+                <!-- Beautified JSON Output Column -->
+                <div class="flex-1 w-full md:w-1/2">
+                    <label for="beautifiedJsonOutput" class="block text-gray-700 text-sm font-bold mb-2 text-left">Beautified JSON:</label>
+                    <textarea
+                        id="beautifiedJsonOutput"
+                        class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        readonly
+                        rows="1" /* Start with 1 row, JS will expand */
+                    ></textarea>
+                </div>
             </div>
         </div>
 
@@ -164,13 +188,22 @@
         const messageBox = document.getElementById('messageBox');
         const tabCsvToJson = document.getElementById('tabCsvToJson');
         const tabJsonToCsv = document.getElementById('tabJsonToCsv');
-        const tabJsonBeautifier = document.getElementById('tabJsonBeautifier'); // New tab reference
+        const tabJsonBeautifier = document.getElementById('tabJsonBeautifier'); // JSON Lint tab reference
 
         const csvToJsonSection = document.getElementById('csvToJsonSection');
         const jsonToCsvSection = document.getElementById('jsonToCsvSection');
-        const jsonBeautifierSection = document.getElementById('jsonBeautifierSection'); // New section reference
+        const jsonBeautifierSection = document.getElementById('jsonBeautifierSection'); // JSON Lint section reference
 
         // --- Utility Functions ---
+
+        /**
+         * Adjusts the height of a textarea to fit its content.
+         * @param {HTMLElement} textarea - The textarea element to adjust.
+         */
+        function adjustTextareaHeight(textarea) {
+            textarea.style.height = 'auto'; // Reset height to recalculate
+            textarea.style.height = (textarea.scrollHeight + 2) + 'px'; // Set height to scrollHeight + a small buffer
+        }
 
         /**
          * Displays a message in the message box.
@@ -226,10 +259,13 @@
             document.getElementById('jsonFileInput').value = '';
             document.getElementById('convertJsonToCsvButton').disabled = true;
 
-            // Reset JSON Beautifier section
-            document.getElementById('jsonInputToBeautify').value = '';
-            document.getElementById('beautifiedJsonOutput').value = '';
-            document.getElementById('beautifiedJsonOutputContainer').classList.add('hidden');
+            // Reset JSON Lint section
+            jsonInputToBeautify.value = '';
+            beautifiedJsonOutput.value = '';
+            // Reset height for the beautified output when switching tabs
+            beautifiedJsonOutput.style.height = '150px'; // Set to a reasonable default height
+            downloadBeautifiedJsonButton.classList.add('hidden'); // Hide download button on tab switch
+            copyBeautifiedJsonButton.classList.add('hidden'); // Hide copy button on tab switch
         }
 
         // --- CSV to JSON Logic ---
@@ -502,21 +538,24 @@
             reader.readAsText(file);
         });
 
-        // --- JSON Beautifier Logic ---
+        // --- JSON Lint Logic ---
         const jsonInputToBeautify = document.getElementById('jsonInputToBeautify');
         const beautifyJsonButton = document.getElementById('beautifyJsonButton');
         const beautifiedJsonOutput = document.getElementById('beautifiedJsonOutput');
-        const beautifiedJsonOutputContainer = document.getElementById('beautifiedJsonOutputContainer');
         const downloadBeautifiedJsonButton = document.getElementById('downloadBeautifiedJsonButton');
+        const copyBeautifiedJsonButton = document.getElementById('copyBeautifiedJsonButton'); // New reference for copy button
 
         /**
-         * Beautifies a JSON string.
+         * Lints and Beautifies a JSON string.
          */
         beautifyJsonButton.addEventListener('click', () => {
             const inputString = jsonInputToBeautify.value.trim();
             hideMessageBox();
             beautifiedJsonOutput.value = ''; // Clear previous output
-            beautifiedJsonOutputContainer.classList.add('hidden'); // Hide output by default
+            beautifiedJsonOutput.style.height = 'auto'; // Reset height
+            downloadBeautifiedJsonButton.classList.add('hidden'); // Hide download button
+            copyBeautifiedJsonButton.classList.add('hidden'); // Hide copy button
+
 
             if (inputString === '') {
                 showMessage('Please paste a JSON string to lint and beautify.', 'info');
@@ -527,7 +566,9 @@
                 const parsedJson = JSON.parse(inputString);
                 const beautifiedString = JSON.stringify(parsedJson, null, 2); // 2 spaces for indentation
                 beautifiedJsonOutput.value = beautifiedString;
-                beautifiedJsonOutputContainer.classList.remove('hidden');
+                adjustTextareaHeight(beautifiedJsonOutput); // Adjust height after setting content
+                downloadBeautifiedJsonButton.classList.remove('hidden'); // Show download button
+                copyBeautifiedJsonButton.classList.remove('hidden'); // Show copy button
                 showMessage('JSON linted and beautified successfully!', 'success');
             } catch (error) {
                 console.error('Error parsing JSON for linting/beautification:', error);
@@ -559,6 +600,28 @@
             }
         });
 
+        // New Event listener for copying beautified JSON
+        copyBeautifiedJsonButton.addEventListener('click', () => {
+            const jsonContent = beautifiedJsonOutput.value;
+            if (jsonContent.trim() === '') {
+                showMessage('No beautified JSON content to copy.', 'error');
+                return;
+            }
+
+            try {
+                // Select the text in the textarea
+                beautifiedJsonOutput.select();
+                beautifiedJsonOutput.setSelectionRange(0, 99999); // For mobile devices
+
+                // Copy the text to the clipboard
+                document.execCommand('copy');
+                showMessage('Beautified JSON copied to clipboard!', 'success');
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+                showMessage('Failed to copy JSON. Please copy manually.', 'error');
+            }
+        });
+
         // --- Tab Navigation Event Listeners ---
         tabCsvToJson.addEventListener('click', () => {
             switchTab(tabCsvToJson, csvToJsonSection);
@@ -568,8 +631,11 @@
             switchTab(tabJsonToCsv, jsonToCsvSection);
         });
 
-        tabJsonBeautifier.addEventListener('click', () => { // New tab click listener
+        tabJsonBeautifier.addEventListener('click', () => { // JSON Lint tab click listener
             switchTab(tabJsonBeautifier, jsonBeautifierSection);
+            // On tab switch, hide the download button for beautified JSON until content is generated
+            downloadBeautifiedJsonButton.classList.add('hidden');
+            copyBeautifiedJsonButton.classList.add('hidden'); // Also hide copy button on tab switch
         });
 
         // Initialize the app by showing the CSV to JSON section by default
@@ -578,7 +644,6 @@
             convertCsvToJsonButton.disabled = true;
             convertJsonToCsvButton.disabled = true;
             // No need to disable beautifyJsonButton, it's always ready for text input
-            // Initial view is already set to csvToJsonSection via HTML, but ensuring consistent reset
             switchTab(tabCsvToJson, csvToJsonSection); // Explicitly set initial tab
         });
     </script>
