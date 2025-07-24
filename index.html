@@ -41,6 +41,9 @@
             <button id="tabJsonBeautifier" class="tab-button py-2 px-6 rounded-full text-gray-700 font-semibold transition-all duration-200 hover:bg-blue-500 hover:text-white ml-2">
                 JSON Lint
             </button>
+            <button id="tabTextDelimiter" class="tab-button py-2 px-6 rounded-full text-gray-700 font-semibold transition-all duration-200 hover:bg-blue-500 hover:text-white ml-2">
+                Text Delimiter
+            </button>
         </div>
 
         <!-- Message display area (global for all apps) -->
@@ -68,7 +71,7 @@
                 class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full
                        shadow-lg transform transition-all duration-200 ease-in-out
                        hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300
-                       disabled:opacity-50 disabled:cursor-not-allowed mb-6"
+                       disabled:opacity50 disabled:cursor-not-allowed mb-6"
                 disabled
             >
                 Convert to JSON
@@ -181,6 +184,85 @@
             </div>
         </div>
 
+        <!-- Text Delimiter Section -->
+        <div id="textDelimiterSection" class="converter-section hidden">
+            <p class="text-gray-600 mb-8">Paste your text and replace one delimiter with another.</p>
+
+            <div class="flex flex-col md:flex-row md:space-x-4 mb-6">
+                <!-- Input Text Column -->
+                <div class="flex-1 w-full md:w-1/2 mb-4 md:mb-0">
+                    <label for="textInputToReplace" class="block text-gray-700 text-sm font-bold mb-2 text-left">Input Text:</label>
+                    <textarea
+                        id="textInputToReplace"
+                        class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[300px]"
+                        placeholder='e.g., apple|banana|cherry'
+                    ></textarea>
+                </div>
+
+                <!-- Replaced Text Output Column -->
+                <div class="flex-1 w-full md:w-1/2">
+                    <label for="replacedTextOutput" class="block text-gray-700 text-sm font-bold mb-2 text-left">Replaced Text:</label>
+                    <textarea
+                        id="replacedTextOutput"
+                        class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        readonly
+                        rows="1" /* Start with 1 row, JS will expand */
+                    ></textarea>
+                </div>
+            </div>
+
+            <!-- Delimiter Inputs and Replace Button -->
+            <div class="flex flex-col md:flex-row md:space-x-4 items-end mb-6">
+                <div class="w-full md:w-1/3 mb-4 md:mb-0 text-left">
+                    <label for="oldDelimiterInput" class="block text-gray-700 text-sm font-bold mb-2">Old Delimiter:</label>
+                    <input
+                        type="text"
+                        id="oldDelimiterInput"
+                        class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="e.g., |"
+                    />
+                </div>
+                <div class="w-full md:w-1/3 mb-4 md:mb-0 text-left">
+                    <label for="newDelimiterInput" class="block text-gray-700 text-sm font-bold mb-2">New Delimiter:</label>
+                    <input
+                        type="text"
+                        id="newDelimiterInput"
+                        class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="e.g., ,"
+                    />
+                </div>
+                <button
+                    id="replaceDelimiterButton"
+                    class="w-full md:w-1/3 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full
+                           shadow-lg transform transition-all duration-200 ease-in-out
+                           hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 flex items-center justify-center space-x-2"
+                >
+                    <i class="fas fa-exchange-alt"></i> <span>Replace Delimiter</span>
+                </button>
+            </div>
+
+            <!-- Download and Copy Buttons for Replaced Text -->
+            <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 mb-6 justify-end">
+                <button
+                    id="downloadReplacedTextButton"
+                    class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-full
+                           shadow-md transform transition-all duration-200 ease-in-out
+                           hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300 hidden flex items-center justify-center space-x-2"
+                >
+                    <i class="fas fa-download"></i> <span>Download Text</span>
+                </button>
+
+                <button
+                    id="copyReplacedTextButton"
+                    class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-full
+                           shadow-md transform transition-all duration-200 ease-in-out
+                           hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-300 hidden flex items-center justify-center space-x-2"
+                >
+                    <i class="fas fa-copy"></i> <span>Copy Text</span>
+                </button>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -188,11 +270,13 @@
         const messageBox = document.getElementById('messageBox');
         const tabCsvToJson = document.getElementById('tabCsvToJson');
         const tabJsonToCsv = document.getElementById('tabJsonToCsv');
-        const tabJsonBeautifier = document.getElementById('tabJsonBeautifier'); // JSON Lint tab reference
+        const tabJsonBeautifier = document.getElementById('tabJsonBeautifier');
+        const tabTextDelimiter = document.getElementById('tabTextDelimiter'); // Renamed tab reference
 
         const csvToJsonSection = document.getElementById('csvToJsonSection');
         const jsonToCsvSection = document.getElementById('jsonToCsvSection');
-        const jsonBeautifierSection = document.getElementById('jsonBeautifierSection'); // JSON Lint section reference
+        const jsonBeautifierSection = document.getElementById('jsonBeautifierSection');
+        const textDelimiterSection = document.getElementById('textDelimiterSection'); // Renamed section reference
 
         // --- Utility Functions ---
 
@@ -231,6 +315,51 @@
         }
 
         /**
+         * Triggers the download of a text file.
+         * @param {string} textContent - The text string to download.
+         * @param {string} filename - The name of the file to download.
+         * @param {string} mimeType - The MIME type of the file (e.g., 'text/plain', 'application/json').
+         */
+        function downloadText(textContent, filename, mimeType = 'text/plain') {
+            const blob = new Blob([textContent], { type: `${mimeType};charset=utf-8;` });
+            const link = document.createElement('a');
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            } else {
+                showMessage('Your browser does not support automatic downloads. Please copy the content manually from the text area.', 'info');
+            }
+        }
+
+        /**
+         * Copies text from a textarea to the clipboard.
+         * @param {HTMLElement} textarea - The textarea element containing the text to copy.
+         * @param {string} successMessage - Message to show on success.
+         * @param {string} errorMessage - Message to show on failure.
+         */
+        function copyTextFromTextarea(textarea, successMessage, errorMessage) {
+            if (textarea.value.trim() === '') {
+                showMessage('No content to copy.', 'error');
+                return;
+            }
+            try {
+                textarea.select();
+                textarea.setSelectionRange(0, 99999); // For mobile devices
+                document.execCommand('copy');
+                showMessage(successMessage, 'success');
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+                showMessage(errorMessage, 'error');
+            }
+        }
+
+        /**
          * Switches the active tab and displays the corresponding converter section.
          * @param {HTMLElement} activeTabButton - The button that was clicked.
          * @param {HTMLElement} activeSection - The section to show.
@@ -262,10 +391,18 @@
             // Reset JSON Lint section
             jsonInputToBeautify.value = '';
             beautifiedJsonOutput.value = '';
-            // Reset height for the beautified output when switching tabs
-            beautifiedJsonOutput.style.height = '150px'; // Set to a reasonable default height
-            downloadBeautifiedJsonButton.classList.add('hidden'); // Hide download button on tab switch
-            copyBeautifiedJsonButton.classList.add('hidden'); // Hide copy button on tab switch
+            beautifiedJsonOutput.style.height = '150px'; // Reset height
+            downloadBeautifiedJsonButton.classList.add('hidden');
+            copyBeautifiedJsonButton.classList.add('hidden');
+
+            // Reset Text Delimiter section (New)
+            textInputToReplace.value = '';
+            oldDelimiterInput.value = '';
+            newDelimiterInput.value = '';
+            replacedTextOutput.value = '';
+            replacedTextOutput.style.height = '150px'; // Reset height
+            downloadReplacedTextButton.classList.add('hidden');
+            copyReplacedTextButton.classList.add('hidden');
         }
 
         // --- CSV to JSON Logic ---
@@ -349,28 +486,6 @@
             return jsonArray;
         }
 
-        /**
-         * Triggers the download of a JSON file.
-         * @param {string} jsonContent - The JSON string to download.
-         * @param {string} filename - The name of the file to download.
-         */
-        function downloadJson(jsonContent, filename) {
-            const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
-            const link = document.createElement('a');
-            if (link.download !== undefined) {
-                const url = URL.createObjectURL(blob);
-                link.setAttribute('href', url);
-                link.setAttribute('download', filename);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-            } else {
-                showMessage('Your browser does not support automatic downloads. Please copy the content manually from the text area.', 'info');
-            }
-        }
-
         // --- CSV to JSON Event Listeners ---
         csvFileInput.addEventListener('change', () => {
             if (csvFileInput.files.length > 0) {
@@ -421,7 +536,7 @@
             }
             const originalFilename = csvFileInput.files[0] ? csvFileInput.files[0].name : 'download';
             const jsonFilename = originalFilename.replace(/\.csv$/, '.json').replace(/(\.\w+)$/, '.json'); // Ensure .json extension
-            downloadJson(jsonContent, jsonFilename);
+            downloadText(jsonContent, jsonFilename, 'application/json');
         });
 
         // --- JSON to CSV Logic ---
@@ -472,29 +587,6 @@
             return csvRows.join('\n');
         }
 
-        /**
-         * Triggers the download of a CSV file.
-         * @param {string} csvContent - The CSV string to download.
-         * @param {string} filename - The name of the file to download.
-         */
-        function downloadCsv(csvContent, filename) {
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            if (link.download !== undefined) {
-                const url = URL.createObjectURL(blob);
-                link.setAttribute('href', url);
-                link.setAttribute('download', filename);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-            } else {
-                showMessage('Your browser does not support automatic downloads. Please copy the content manually.', 'info');
-                window.open('data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent));
-            }
-        }
-
         // --- JSON to CSV Event Listeners ---
         jsonFileInput.addEventListener('change', () => {
             if (jsonFileInput.files.length > 0) {
@@ -525,7 +617,7 @@
                     }
 
                     const csvContent = convertJsonToCsv(data);
-                    downloadCsv(csvContent, file.name.replace('.json', '.csv'));
+                    downloadText(csvContent, file.name.replace('.json', '.csv'), 'text/csv');
                     showMessage('Conversion successful! Your CSV file is downloading.', 'success');
                 } catch (error) {
                     console.error('Error processing JSON file for CSV conversion:', error);
@@ -543,7 +635,7 @@
         const beautifyJsonButton = document.getElementById('beautifyJsonButton');
         const beautifiedJsonOutput = document.getElementById('beautifiedJsonOutput');
         const downloadBeautifiedJsonButton = document.getElementById('downloadBeautifiedJsonButton');
-        const copyBeautifiedJsonButton = document.getElementById('copyBeautifiedJsonButton'); // New reference for copy button
+        const copyBeautifiedJsonButton = document.getElementById('copyBeautifiedJsonButton');
 
         /**
          * Lints and Beautifies a JSON string.
@@ -584,43 +676,73 @@
                 return;
             }
             const filename = 'beautified_json.json';
-            const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
-            const link = document.createElement('a');
-            if (link.download !== undefined) {
-                const url = URL.createObjectURL(blob);
-                link.setAttribute('href', url);
-                link.setAttribute('download', filename);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-            } else {
-                showMessage('Your browser does not support automatic downloads. Please copy the content manually from the text area.', 'info');
-            }
+            downloadText(jsonContent, filename, 'application/json');
         });
 
-        // New Event listener for copying beautified JSON
+        // Event listener for copying beautified JSON
         copyBeautifiedJsonButton.addEventListener('click', () => {
-            const jsonContent = beautifiedJsonOutput.value;
-            if (jsonContent.trim() === '') {
-                showMessage('No beautified JSON content to copy.', 'error');
+            copyTextFromTextarea(beautifiedJsonOutput, 'Beautified JSON copied to clipboard!', 'Failed to copy JSON. Please copy manually.');
+        });
+
+        // --- Text Delimiter Logic (New) ---
+        const textInputToReplace = document.getElementById('textInputToReplace');
+        const oldDelimiterInput = document.getElementById('oldDelimiterInput');
+        const newDelimiterInput = document.getElementById('newDelimiterInput');
+        const replaceDelimiterButton = document.getElementById('replaceDelimiterButton');
+        const replacedTextOutput = document.getElementById('replacedTextOutput');
+        const downloadReplacedTextButton = document.getElementById('downloadReplacedTextButton');
+        const copyReplacedTextButton = document.getElementById('copyReplacedTextButton');
+
+        replaceDelimiterButton.addEventListener('click', () => {
+            const inputText = textInputToReplace.value;
+            const oldDelimiter = oldDelimiterInput.value;
+            const newDelimiter = newDelimiterInput.value;
+
+            hideMessageBox();
+            replacedTextOutput.value = ''; // Clear previous output
+            replacedTextOutput.style.height = 'auto'; // Reset height
+            downloadReplacedTextButton.classList.add('hidden');
+            copyReplacedTextButton.classList.add('hidden');
+
+            if (inputText.trim() === '') {
+                showMessage('Please paste some text to perform replacement.', 'info');
+                return;
+            }
+
+            if (oldDelimiter.length === 0) {
+                showMessage('Please enter the delimiter you want to replace.', 'error');
                 return;
             }
 
             try {
-                // Select the text in the textarea
-                beautifiedJsonOutput.select();
-                beautifiedJsonOutput.setSelectionRange(0, 99999); // For mobile devices
-
-                // Copy the text to the clipboard
-                document.execCommand('copy');
-                showMessage('Beautified JSON copied to clipboard!', 'success');
-            } catch (err) {
-                console.error('Failed to copy text: ', err);
-                showMessage('Failed to copy JSON. Please copy manually.', 'error');
+                // Using String.prototype.replaceAll for direct string replacement
+                // If oldDelimiter is a regex character and literal replacement is desired,
+                // replaceAll is ideal as it treats its first argument literally.
+                const replacedText = inputText.replaceAll(oldDelimiter, newDelimiter);
+                replacedTextOutput.value = replacedText;
+                adjustTextareaHeight(replacedTextOutput);
+                downloadReplacedTextButton.classList.remove('hidden');
+                copyReplacedTextButton.classList.remove('hidden');
+                showMessage('Delimiter replacement successful!', 'success');
+            } catch (error) {
+                console.error('Error during text replacement:', error);
+                showMessage(`Error during replacement: ${error.message}`, 'error');
             }
         });
+
+        downloadReplacedTextButton.addEventListener('click', () => {
+            const textContent = replacedTextOutput.value;
+            if (textContent.trim() === '') {
+                showMessage('No replaced text content to download.', 'error');
+                return;
+            }
+            downloadText(textContent, 'replaced_text.txt', 'text/plain');
+        });
+
+        copyReplacedTextButton.addEventListener('click', () => {
+            copyTextFromTextarea(replacedTextOutput, 'Replaced text copied to clipboard!', 'Failed to copy text. Please copy manually.');
+        });
+
 
         // --- Tab Navigation Event Listeners ---
         tabCsvToJson.addEventListener('click', () => {
@@ -631,11 +753,12 @@
             switchTab(tabJsonToCsv, jsonToCsvSection);
         });
 
-        tabJsonBeautifier.addEventListener('click', () => { // JSON Lint tab click listener
+        tabJsonBeautifier.addEventListener('click', () => {
             switchTab(tabJsonBeautifier, jsonBeautifierSection);
-            // On tab switch, hide the download button for beautified JSON until content is generated
-            downloadBeautifiedJsonButton.classList.add('hidden');
-            copyBeautifiedJsonButton.classList.add('hidden'); // Also hide copy button on tab switch
+        });
+
+        tabTextDelimiter.addEventListener('click', () => { // Renamed tab click listener
+            switchTab(tabTextDelimiter, textDelimiterSection);
         });
 
         // Initialize the app by showing the CSV to JSON section by default
@@ -643,7 +766,6 @@
             // Set initial state for all buttons/sections
             convertCsvToJsonButton.disabled = true;
             convertJsonToCsvButton.disabled = true;
-            // No need to disable beautifyJsonButton, it's always ready for text input
             switchTab(tabCsvToJson, csvToJsonSection); // Explicitly set initial tab
         });
     </script>
