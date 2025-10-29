@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome CDN for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- QRious library for client-side QR code generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <style>
         /* Custom font for a clean look */
         body {
@@ -31,18 +33,21 @@
         <h1 class="text-3xl font-extrabold text-gray-800 mb-6">NanaBoison Utilities</h1>
 
         <!-- Navigation Tabs -->
-        <div class="flex justify-center mb-8 bg-gray-100 rounded-full p-1 shadow-inner">
-            <button id="tabCsvToJson" class="tab-button active py-2 px-6 rounded-full text-gray-700 font-semibold transition-all duration-200 hover:bg-blue-500 hover:text-white">
+        <div class="flex justify-center mb-8 bg-gray-100 rounded-full p-1 shadow-inner flex-wrap">
+            <button id="tabCsvToJson" class="tab-button active py-2 px-4 rounded-full text-gray-700 font-semibold transition-all duration-200 hover:bg-blue-500 hover:text-white">
                 CSV to JSON
             </button>
-            <button id="tabJsonToCsv" class="tab-button py-2 px-6 rounded-full text-gray-700 font-semibold transition-all duration-200 hover:bg-blue-500 hover:text-white ml-2">
+            <button id="tabJsonToCsv" class="tab-button py-2 px-4 rounded-full text-gray-700 font-semibold transition-all duration-200 hover:bg-blue-500 hover:text-white ml-2">
                 JSON to CSV
             </button>
-            <button id="tabJsonBeautifier" class="tab-button py-2 px-6 rounded-full text-gray-700 font-semibold transition-all duration-200 hover:bg-blue-500 hover:text-white ml-2">
+            <button id="tabJsonBeautifier" class="tab-button py-2 px-4 rounded-full text-gray-700 font-semibold transition-all duration-200 hover:bg-blue-500 hover:text-white ml-2">
                 JSON Lint
             </button>
-            <button id="tabTextDelimiter" class="tab-button py-2 px-6 rounded-full text-gray-700 font-semibold transition-all duration-200 hover:bg-blue-500 hover:text-white ml-2">
+            <button id="tabTextDelimiter" class="tab-button py-2 px-4 rounded-full text-gray-700 font-semibold transition-all duration-200 hover:bg-blue-500 hover:text-white ml-2">
                 Text Delimiter
+            </button>
+            <button id="tabQrCodeGenerator" class="tab-button py-2 px-4 rounded-full text-gray-700 font-semibold transition-all duration-200 hover:bg-blue-500 hover:text-white ml-2">
+                QR Code
             </button>
         </div>
 
@@ -262,6 +267,48 @@
                 </button>
             </div>
         </div>
+        
+        <!-- QR Code Generator Section (New) -->
+        <div id="qrCodeGeneratorSection" class="converter-section hidden">
+            <p class="text-gray-600 mb-8">Enter any text or link to instantly generate a QR code image.</p>
+
+            <div class="flex flex-col md:flex-row md:space-x-4 mb-6 items-start">
+                <!-- Input Text Column -->
+                <div class="flex-1 w-full md:w-1/2 mb-4 md:mb-0">
+                    <label for="qrCodeInput" class="block text-gray-700 text-sm font-bold mb-2 text-left">Text or Link:</label>
+                    <textarea
+                        id="qrCodeInput"
+                        class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[200px]"
+                        placeholder='e.g., https://www.google.com or Your secret message'
+                    ></textarea>
+                    <button
+                        id="generateQrCodeButton"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full
+                               shadow-lg transform transition-all duration-200 ease-in-out
+                               hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 flex items-center justify-center space-x-2 mt-4"
+                    >
+                        <i class="fas fa-qrcode"></i> <span>Generate QR Code</span>
+                    </button>
+                </div>
+
+                <!-- QR Code Output Column -->
+                <div class="flex-1 w-full md:w-1/2">
+                    <label class="block text-gray-700 text-sm font-bold mb-2 text-left">Generated QR Code:</label>
+                    <div id="qrCodeOutputContainer" class="p-4 bg-gray-50 border border-gray-300 rounded-lg flex flex-col items-center justify-center min-h-[200px] space-y-4">
+                        <canvas id="qrCodeCanvas" class="hidden"></canvas>
+                        <p id="qrCodePlaceholder" class="text-gray-500 text-sm">QR Code will appear here.</p>
+                        <button
+                            id="downloadQrCodeButton"
+                            class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full
+                                   shadow-md transform transition-all duration-200 ease-in-out
+                                   hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300 hidden flex items-center justify-center space-x-2"
+                        >
+                            <i class="fas fa-download"></i> <span>Download QR Code</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     </div>
 
@@ -271,12 +318,14 @@
         const tabCsvToJson = document.getElementById('tabCsvToJson');
         const tabJsonToCsv = document.getElementById('tabJsonToCsv');
         const tabJsonBeautifier = document.getElementById('tabJsonBeautifier');
-        const tabTextDelimiter = document.getElementById('tabTextDelimiter'); // Renamed tab reference
+        const tabTextDelimiter = document.getElementById('tabTextDelimiter');
+        const tabQrCodeGenerator = document.getElementById('tabQrCodeGenerator'); // New tab reference
 
         const csvToJsonSection = document.getElementById('csvToJsonSection');
         const jsonToCsvSection = document.getElementById('jsonToCsvSection');
         const jsonBeautifierSection = document.getElementById('jsonBeautifierSection');
-        const textDelimiterSection = document.getElementById('textDelimiterSection'); // Renamed section reference
+        const textDelimiterSection = document.getElementById('textDelimiterSection');
+        const qrCodeGeneratorSection = document.getElementById('qrCodeGeneratorSection'); // New section reference
 
         // --- Utility Functions ---
 
@@ -395,7 +444,7 @@
             downloadBeautifiedJsonButton.classList.add('hidden');
             copyBeautifiedJsonButton.classList.add('hidden');
 
-            // Reset Text Delimiter section (New)
+            // Reset Text Delimiter section
             textInputToReplace.value = '';
             oldDelimiterInput.value = '';
             newDelimiterInput.value = '';
@@ -403,6 +452,12 @@
             replacedTextOutput.style.height = '150px'; // Reset height
             downloadReplacedTextButton.classList.add('hidden');
             copyReplacedTextButton.classList.add('hidden');
+            
+            // Reset QR Code Generator section (New)
+            qrCodeInput.value = '';
+            qrCodeCanvas.classList.add('hidden');
+            qrCodePlaceholder.classList.remove('hidden');
+            downloadQrCodeButton.classList.add('hidden');
         }
 
         // --- CSV to JSON Logic ---
@@ -412,12 +467,6 @@
         const jsonOutputContainer = document.getElementById('jsonOutputContainer');
         const downloadJsonButton = document.getElementById('downloadJsonButton');
 
-        /**
-         * Parses a single CSV line into an array of fields, correctly handling
-         * commas within double-quoted fields and escaped double quotes ("").
-         * @param {string} line - The CSV line string.
-         * @returns {Array<string>} An array of parsed field values.
-         */
         function parseCsvLine(line) {
             const fields = [];
             let inQuote = false;
@@ -427,66 +476,46 @@
                 const char = line[i];
 
                 if (char === '"') {
-                    // Check for escaped double quotes: ""
                     if (inQuote && line[i + 1] === '"') {
                         currentField += '"';
-                        i++; // Skip the next quote character as it's part of the escaped sequence
+                        i++;
                     } else {
-                        // Toggle inQuote state if it's an unescaped double quote
                         inQuote = !inQuote;
                     }
                 } else if (char === ',' && !inQuote) {
-                    // End of a field if outside of quotes
                     fields.push(currentField.trim());
-                    currentField = ''; // Reset for next field
+                    currentField = '';
                 } else {
-                    // Accumulate characters into the current field
                     currentField += char;
                 }
             }
-            // Add the last field after the loop finishes
             fields.push(currentField.trim());
             return fields;
         }
 
-        /**
-         * Converts a CSV string into an array of JSON objects.
-         * Assumes the first line of the CSV is the header row.
-         * @param {string} csvString - The full CSV content as a string.
-         * @returns {Array<Object>} An array of JSON objects.
-         */
         function convertCsvToJson(csvString) {
-            const lines = csvString.split(/\r?\n/).filter(line => line.trim() !== ''); // Split by newline, filter empty lines
+            const lines = csvString.split(/\r?\n/).filter(line => line.trim() !== '');
 
-            if (lines.length === 0) {
-                return [];
-            }
+            if (lines.length === 0) return [];
 
-            // Parse the header row
             const headers = parseCsvLine(lines[0]);
-
             const jsonArray = [];
 
-            // Iterate over the data rows (starting from the second line)
             for (let i = 1; i < lines.length; i++) {
                 const line = lines[i];
-                // Skip empty lines that might result from trailing newlines
                 if (line.trim() === '') continue;
 
                 const rowValues = parseCsvLine(line);
                 const rowObject = {};
 
-                // Ensure headers match values, handle cases where row might have fewer values than headers
                 headers.forEach((header, index) => {
                     rowObject[header] = rowValues[index] !== undefined ? rowValues[index] : '';
                 });
                 jsonArray.push(rowObject);
             }
-
             return jsonArray;
         }
 
-        // --- CSV to JSON Event Listeners ---
         csvFileInput.addEventListener('change', () => {
             if (csvFileInput.files.length > 0) {
                 convertCsvToJsonButton.disabled = false;
@@ -535,7 +564,7 @@
                 return;
             }
             const originalFilename = csvFileInput.files[0] ? csvFileInput.files[0].name : 'download';
-            const jsonFilename = originalFilename.replace(/\.csv$/, '.json').replace(/(\.\w+)$/, '.json'); // Ensure .json extension
+            const jsonFilename = originalFilename.replace(/\.csv$/, '.json').replace(/(\.\w+)$/, '.json');
             downloadText(jsonContent, jsonFilename, 'application/json');
         });
 
@@ -543,18 +572,9 @@
         const jsonFileInput = document.getElementById('jsonFileInput');
         const convertJsonToCsvButton = document.getElementById('convertJsonToCsvButton');
 
-        /**
-         * Converts an array of JSON objects into a CSV string.
-         * Assumes the JSON data is an array of objects with consistent keys.
-         * @param {Array<Object>} jsonData - The array of JSON objects.
-         * @returns {string} The CSV formatted string.
-         */
         function convertJsonToCsv(jsonData) {
-            if (jsonData.length === 0) {
-                return '';
-            }
+            if (jsonData.length === 0) return '';
 
-            // Get all unique headers from all objects to ensure comprehensive CSV
             const allHeaders = new Set();
             jsonData.forEach(obj => {
                 Object.keys(obj).forEach(key => allHeaders.add(key));
@@ -562,21 +582,16 @@
             const headers = Array.from(allHeaders);
 
             const csvRows = [];
-
-            // Add headers row
             csvRows.push(headers.map(header => `"${header}"`).join(','));
 
-            // Add data rows
             jsonData.forEach(row => {
                 const values = headers.map(header => {
                     let value = row[header];
                     if (value === null || value === undefined) {
-                        value = ''; // Handle null/undefined values
+                        value = '';
                     } else if (typeof value === 'object') {
-                        // For nested objects or arrays, stringify them
                         value = JSON.stringify(value);
                     }
-                    // Escape double quotes by doubling them, and wrap in double quotes if it contains comma, double quote or newline
                     const needsQuotes = String(value).includes(',') || String(value).includes('"') || String(value).includes('\n') || String(value).includes('\r');
                     let escapedValue = String(value).replace(/"/g, '""');
                     return needsQuotes ? `"${escapedValue}"` : escapedValue;
@@ -587,7 +602,6 @@
             return csvRows.join('\n');
         }
 
-        // --- JSON to CSV Event Listeners ---
         jsonFileInput.addEventListener('change', () => {
             if (jsonFileInput.files.length > 0) {
                 convertJsonToCsvButton.disabled = false;
@@ -610,7 +624,6 @@
                     const jsonString = e.target.result;
                     const data = JSON.parse(jsonString);
 
-                    // Validate if data is an array of objects
                     if (!Array.isArray(data) || data.length === 0 || typeof data[0] !== 'object' || data[0] === null) {
                         showMessage('Invalid JSON format. Expected an array of objects for CSV conversion.', 'error');
                         return;
@@ -637,16 +650,13 @@
         const downloadBeautifiedJsonButton = document.getElementById('downloadBeautifiedJsonButton');
         const copyBeautifiedJsonButton = document.getElementById('copyBeautifiedJsonButton');
 
-        /**
-         * Lints and Beautifies a JSON string.
-         */
         beautifyJsonButton.addEventListener('click', () => {
             const inputString = jsonInputToBeautify.value.trim();
             hideMessageBox();
-            beautifiedJsonOutput.value = ''; // Clear previous output
-            beautifiedJsonOutput.style.height = 'auto'; // Reset height
-            downloadBeautifiedJsonButton.classList.add('hidden'); // Hide download button
-            copyBeautifiedJsonButton.classList.add('hidden'); // Hide copy button
+            beautifiedJsonOutput.value = '';
+            beautifiedJsonOutput.style.height = 'auto';
+            downloadBeautifiedJsonButton.classList.add('hidden');
+            copyBeautifiedJsonButton.classList.add('hidden');
 
 
             if (inputString === '') {
@@ -656,11 +666,11 @@
 
             try {
                 const parsedJson = JSON.parse(inputString);
-                const beautifiedString = JSON.stringify(parsedJson, null, 2); // 2 spaces for indentation
+                const beautifiedString = JSON.stringify(parsedJson, null, 2);
                 beautifiedJsonOutput.value = beautifiedString;
-                adjustTextareaHeight(beautifiedJsonOutput); // Adjust height after setting content
-                downloadBeautifiedJsonButton.classList.remove('hidden'); // Show download button
-                copyBeautifiedJsonButton.classList.remove('hidden'); // Show copy button
+                adjustTextareaHeight(beautifiedJsonOutput);
+                downloadBeautifiedJsonButton.classList.remove('hidden');
+                copyBeautifiedJsonButton.classList.remove('hidden');
                 showMessage('JSON linted and beautified successfully!', 'success');
             } catch (error) {
                 console.error('Error parsing JSON for linting/beautification:', error);
@@ -668,7 +678,6 @@
             }
         });
 
-        // Event listener for downloading beautified JSON
         downloadBeautifiedJsonButton.addEventListener('click', () => {
             const jsonContent = beautifiedJsonOutput.value;
             if (jsonContent.trim() === '') {
@@ -679,12 +688,11 @@
             downloadText(jsonContent, filename, 'application/json');
         });
 
-        // Event listener for copying beautified JSON
         copyBeautifiedJsonButton.addEventListener('click', () => {
             copyTextFromTextarea(beautifiedJsonOutput, 'Beautified JSON copied to clipboard!', 'Failed to copy JSON. Please copy manually.');
         });
 
-        // --- Text Delimiter Logic (New) ---
+        // --- Text Delimiter Logic ---
         const textInputToReplace = document.getElementById('textInputToReplace');
         const oldDelimiterInput = document.getElementById('oldDelimiterInput');
         const newDelimiterInput = document.getElementById('newDelimiterInput');
@@ -699,8 +707,8 @@
             const newDelimiter = newDelimiterInput.value;
 
             hideMessageBox();
-            replacedTextOutput.value = ''; // Clear previous output
-            replacedTextOutput.style.height = 'auto'; // Reset height
+            replacedTextOutput.value = '';
+            replacedTextOutput.style.height = 'auto';
             downloadReplacedTextButton.classList.add('hidden');
             copyReplacedTextButton.classList.add('hidden');
 
@@ -715,9 +723,6 @@
             }
 
             try {
-                // Using String.prototype.replaceAll for direct string replacement
-                // If oldDelimiter is a regex character and literal replacement is desired,
-                // replaceAll is ideal as it treats its first argument literally.
                 const replacedText = inputText.replaceAll(oldDelimiter, newDelimiter);
                 replacedTextOutput.value = replacedText;
                 adjustTextareaHeight(replacedTextOutput);
@@ -742,6 +747,67 @@
         copyReplacedTextButton.addEventListener('click', () => {
             copyTextFromTextarea(replacedTextOutput, 'Replaced text copied to clipboard!', 'Failed to copy text. Please copy manually.');
         });
+        
+        // --- QR Code Generator Logic (New) ---
+        const qrCodeInput = document.getElementById('qrCodeInput');
+        const generateQrCodeButton = document.getElementById('generateQrCodeButton');
+        const qrCodeCanvas = document.getElementById('qrCodeCanvas');
+        const qrCodePlaceholder = document.getElementById('qrCodePlaceholder');
+        const downloadQrCodeButton = document.getElementById('downloadQrCodeButton');
+        
+        // Initialize QRious instance (will be configured on generation)
+        let qr = new QRious({ element: qrCodeCanvas, size: 256 });
+        
+        generateQrCodeButton.addEventListener('click', () => {
+            const data = qrCodeInput.value.trim();
+            hideMessageBox();
+            
+            if (data === '') {
+                showMessage('Please enter some text or a link to generate the QR code.', 'error');
+                qrCodeCanvas.classList.add('hidden');
+                qrCodePlaceholder.classList.remove('hidden');
+                downloadQrCodeButton.classList.add('hidden');
+                return;
+            }
+
+            try {
+                qr.set({
+                    value: data,
+                    size: 256, // Fixed size for clean display
+                    foreground: '#1F2937', // dark gray
+                    background: '#ffffff'
+                });
+                
+                qrCodeCanvas.classList.remove('hidden');
+                qrCodePlaceholder.classList.add('hidden');
+                downloadQrCodeButton.classList.remove('hidden');
+                showMessage('QR Code generated successfully!', 'success');
+            } catch (error) {
+                console.error('Error generating QR code:', error);
+                showMessage('Failed to generate QR code. Check the input data.', 'error');
+                qrCodeCanvas.classList.add('hidden');
+                qrCodePlaceholder.classList.remove('hidden');
+                downloadQrCodeButton.classList.add('hidden');
+            }
+        });
+        
+        downloadQrCodeButton.addEventListener('click', () => {
+            if (qrCodeCanvas.classList.contains('hidden')) {
+                 showMessage('Generate a QR code first before attempting to download.', 'error');
+                 return;
+            }
+
+            // Get data URL from canvas and trigger download
+            const dataURL = qrCodeCanvas.toDataURL("image/png");
+            const link = document.createElement('a');
+            link.href = dataURL;
+            link.download = 'qrcode_nanaboison.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showMessage('QR code image downloaded!', 'success');
+        });
 
 
         // --- Tab Navigation Event Listeners ---
@@ -757,9 +823,14 @@
             switchTab(tabJsonBeautifier, jsonBeautifierSection);
         });
 
-        tabTextDelimiter.addEventListener('click', () => { // Renamed tab click listener
+        tabTextDelimiter.addEventListener('click', () => {
             switchTab(tabTextDelimiter, textDelimiterSection);
         });
+        
+        tabQrCodeGenerator.addEventListener('click', () => {
+            switchTab(tabQrCodeGenerator, qrCodeGeneratorSection);
+        });
+
 
         // Initialize the app by showing the CSV to JSON section by default
         document.addEventListener('DOMContentLoaded', () => {
