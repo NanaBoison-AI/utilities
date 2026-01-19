@@ -4,12 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NanaBoison Utilities</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/gwDSdNBh/icon.png">
+    
     <!-- Tailwind CSS CDN for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome CDN for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- QRious library for client-side QR code generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <!-- Marked library for Markdown rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
     <style>
         /* Custom font for a clean look */
         body {
@@ -26,11 +31,37 @@
             color: white;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
+        /* Markdown Preview Styling */
+        #markdownPreview {
+            text-align: left;
+            padding: 1rem;
+            background-color: #f9fafb;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            min-height: 300px;
+            overflow-y: auto;
+        }
+        #markdownPreview h1 { font-size: 2em; font-weight: bold; margin-bottom: 0.5em; border-bottom: 1px solid #eaecef; }
+        #markdownPreview h2 { font-size: 1.5em; font-weight: bold; margin-bottom: 0.5em; border-bottom: 1px solid #eaecef; }
+        #markdownPreview h3 { font-size: 1.25em; font-weight: bold; margin-bottom: 0.5em; }
+        #markdownPreview p { margin-bottom: 1em; line-height: 1.6; }
+        #markdownPreview ul { list-style-type: disc; padding-left: 2em; margin-bottom: 1em; }
+        #markdownPreview ol { list-style-type: decimal; padding-left: 2em; margin-bottom: 1em; }
+        #markdownPreview code { background-color: rgba(27,31,35,.05); padding: .2em .4em; border-radius: 3px; font-family: monospace; }
+        #markdownPreview pre { background-color: #f6f8fa; padding: 1em; border-radius: 3px; overflow: auto; margin-bottom: 1em; }
+        #markdownPreview blockquote { border-left: .25em solid #dfe2e5; color: #6a737d; padding: 0 1em; margin-bottom: 1em; }
+        #markdownPreview a { color: #0366d6; text-decoration: none; }
+        #markdownPreview a:hover { text-decoration: underline; }
+        #markdownPreview table { border-collapse: collapse; width: 100%; margin-bottom: 1em; }
+        #markdownPreview th, #markdownPreview td { border: 1px solid #dfe2e5; padding: 6px 13px; }
+        #markdownPreview tr:nth-child(2n) { background-color: #f6f8fa; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-blue-100 to-purple-200 min-h-screen flex items-center justify-center p-4">
     <div class="bg-white p-8 rounded-xl shadow-2xl w-full md:w-4/5 lg:w-3/4 text-center border border-gray-200">
-        <h1 class="text-3xl font-extrabold text-gray-800 mb-6">NanaBoison Utilities</h1>
+        
+        <!-- Header -->
+        <h1 class="text-3xl font-extrabold text-gray-800 mb-8">NanaBoison Utilities</h1>
 
         <!-- Navigation Tabs -->
         <div class="flex justify-center mb-8 bg-gray-100 rounded-full p-1 shadow-inner flex-wrap">
@@ -49,6 +80,9 @@
             <button id="tabQrCodeGenerator" class="tab-button py-2 px-4 rounded-full text-gray-700 font-semibold transition-all duration-200 hover:bg-blue-500 hover:text-white ml-2">
                 QR Code
             </button>
+            <button id="tabMarkdownViewer" class="tab-button py-2 px-4 rounded-full text-gray-700 font-semibold transition-all duration-200 hover:bg-blue-500 hover:text-white ml-2">
+                Markdown
+            </button>
         </div>
 
         <!-- Message display area (global for all apps) -->
@@ -57,7 +91,6 @@
         <!-- CSV to JSON Section -->
         <div id="csvToJsonSection" class="converter-section">
             <p class="text-gray-600 mb-8">Upload your CSV file to convert it into a structured JSON format.</p>
-            <!-- File input for CSV file -->
             <input
                 type="file"
                 id="csvFileInput"
@@ -69,8 +102,6 @@
                        file:bg-blue-50 file:text-blue-700
                        hover:file:bg-blue-100 mb-6 cursor-pointer"
             />
-
-            <!-- Button to trigger CSV to JSON conversion -->
             <button
                 id="convertCsvToJsonButton"
                 class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full
@@ -82,7 +113,6 @@
                 Convert to JSON
             </button>
 
-            <!-- JSON Output Area -->
             <div id="jsonOutputContainer" class="hidden mt-6 text-left">
                 <label for="jsonOutput" class="block text-gray-700 text-sm font-bold mb-2">Generated JSON:</label>
                 <textarea
@@ -104,7 +134,6 @@
         <!-- JSON to CSV Section -->
         <div id="jsonToCsvSection" class="converter-section hidden">
             <p class="text-gray-600 mb-8">Upload your JSON file to convert it into a downloadable CSV spreadsheet.</p>
-            <!-- File input for JSON file -->
             <input
                 type="file"
                 id="jsonFileInput"
@@ -116,14 +145,12 @@
                        file:bg-blue-50 file:text-blue-700
                        hover:file:bg-blue-100 mb-6 cursor-pointer"
             />
-
-            <!-- Button to trigger JSON to CSV conversion -->
             <button
                 id="convertJsonToCsvButton"
                 class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full
                        shadow-lg transform transition-all duration-200 ease-in-out
                        hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300
-                       disabled:opacity-50 disabled:cursor-not-allowed"
+                       disabled:opacity50 disabled:cursor-not-allowed"
                 disabled
             >
                 Convert to CSV
@@ -133,8 +160,6 @@
         <!-- JSON Beautifier Section -->
         <div id="jsonBeautifierSection" class="converter-section hidden">
             <p class="text-gray-600 mb-8">Paste your JSON string below to lint and beautify it.</p>
-
-            <!-- Buttons at the top, side-by-side -->
             <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 mb-6">
                 <button
                     id="beautifyJsonButton"
@@ -144,7 +169,6 @@
                 >
                     <i class="fas fa-code"></i> <span>Lint & Beautify</span>
                 </button>
-
                 <button
                     id="downloadBeautifiedJsonButton"
                     class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-full
@@ -153,7 +177,6 @@
                 >
                     <i class="fas fa-download"></i> <span>Download JSON</span>
                 </button>
-
                 <button
                     id="copyBeautifiedJsonButton"
                     class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-full
@@ -163,10 +186,7 @@
                     <i class="fas fa-copy"></i> <span>Copy JSON</span>
                 </button>
             </div>
-
-            <!-- Container for side-by-side text areas -->
             <div class="flex flex-col md:flex-row md:space-x-4 mb-6">
-                <!-- Input JSON String Column -->
                 <div class="flex-1 w-full md:w-1/2 mb-4 md:mb-0">
                     <label for="jsonInputToBeautify" class="block text-gray-700 text-sm font-bold mb-2 text-left">Input JSON String:</label>
                     <textarea
@@ -175,15 +195,13 @@
                         placeholder='e.g., {"name":"John Doe","age":30,"city":"New York"}'
                     ></textarea>
                 </div>
-
-                <!-- Beautified JSON Output Column -->
                 <div class="flex-1 w-full md:w-1/2">
                     <label for="beautifiedJsonOutput" class="block text-gray-700 text-sm font-bold mb-2 text-left">Beautified JSON:</label>
                     <textarea
                         id="beautifiedJsonOutput"
                         class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                         readonly
-                        rows="1" /* Start with 1 row, JS will expand */
+                        rows="1"
                     ></textarea>
                 </div>
             </div>
@@ -192,9 +210,7 @@
         <!-- Text Delimiter Section -->
         <div id="textDelimiterSection" class="converter-section hidden">
             <p class="text-gray-600 mb-8">Paste your text and replace one delimiter with another.</p>
-
             <div class="flex flex-col md:flex-row md:space-x-4 mb-6">
-                <!-- Input Text Column -->
                 <div class="flex-1 w-full md:w-1/2 mb-4 md:mb-0">
                     <label for="textInputToReplace" class="block text-gray-700 text-sm font-bold mb-2 text-left">Input Text:</label>
                     <textarea
@@ -203,109 +219,86 @@
                         placeholder='e.g., apple|banana|cherry'
                     ></textarea>
                 </div>
-
-                <!-- Replaced Text Output Column -->
                 <div class="flex-1 w-full md:w-1/2">
                     <label for="replacedTextOutput" class="block text-gray-700 text-sm font-bold mb-2 text-left">Replaced Text:</label>
                     <textarea
                         id="replacedTextOutput"
                         class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                         readonly
-                        rows="1" /* Start with 1 row, JS will expand */
+                        rows="1"
                     ></textarea>
                 </div>
             </div>
-
-            <!-- Delimiter Inputs and Replace Button -->
             <div class="flex flex-col md:flex-row md:space-x-4 items-end mb-6">
                 <div class="w-full md:w-1/3 mb-4 md:mb-0 text-left">
                     <label for="oldDelimiterInput" class="block text-gray-700 text-sm font-bold mb-2">Old Delimiter:</label>
-                    <input
-                        type="text"
-                        id="oldDelimiterInput"
-                        class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="e.g., |"
-                    />
+                    <input type="text" id="oldDelimiterInput" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., |" />
                 </div>
                 <div class="w-full md:w-1/3 mb-4 md:mb-0 text-left">
                     <label for="newDelimiterInput" class="block text-gray-700 text-sm font-bold mb-2">New Delimiter:</label>
-                    <input
-                        type="text"
-                        id="newDelimiterInput"
-                        class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="e.g., ,"
-                    />
+                    <input type="text" id="newDelimiterInput" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., ," />
                 </div>
-                <button
-                    id="replaceDelimiterButton"
-                    class="w-full md:w-1/3 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full
-                           shadow-lg transform transition-all duration-200 ease-in-out
-                           hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 flex items-center justify-center space-x-2"
-                >
+                <button id="replaceDelimiterButton" class="w-full md:w-1/3 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transform transition-all duration-200 ease-in-out hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 flex items-center justify-center space-x-2">
                     <i class="fas fa-exchange-alt"></i> <span>Replace Delimiter</span>
                 </button>
             </div>
-
-            <!-- Download and Copy Buttons for Replaced Text -->
             <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 mb-6 justify-end">
-                <button
-                    id="downloadReplacedTextButton"
-                    class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-full
-                           shadow-md transform transition-all duration-200 ease-in-out
-                           hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300 hidden flex items-center justify-center space-x-2"
-                >
+                <button id="downloadReplacedTextButton" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-full shadow-md transform transition-all duration-200 ease-in-out hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300 hidden flex items-center justify-center space-x-2">
                     <i class="fas fa-download"></i> <span>Download Text</span>
                 </button>
-
-                <button
-                    id="copyReplacedTextButton"
-                    class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-full
-                           shadow-md transform transition-all duration-200 ease-in-out
-                           hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-300 hidden flex items-center justify-center space-x-2"
-                >
+                <button id="copyReplacedTextButton" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-full shadow-md transform transition-all duration-200 ease-in-out hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-300 hidden flex items-center justify-center space-x-2">
                     <i class="fas fa-copy"></i> <span>Copy Text</span>
                 </button>
             </div>
         </div>
         
-        <!-- QR Code Generator Section (New) -->
+        <!-- QR Code Generator Section -->
         <div id="qrCodeGeneratorSection" class="converter-section hidden">
             <p class="text-gray-600 mb-8">Enter any text or link to instantly generate a QR code image.</p>
-
             <div class="flex flex-col md:flex-row md:space-x-4 mb-6 items-start">
-                <!-- Input Text Column -->
                 <div class="flex-1 w-full md:w-1/2 mb-4 md:mb-0">
                     <label for="qrCodeInput" class="block text-gray-700 text-sm font-bold mb-2 text-left">Text or Link:</label>
-                    <textarea
-                        id="qrCodeInput"
-                        class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[200px]"
-                        placeholder='e.g., https://www.google.com or Your secret message'
-                    ></textarea>
-                    <button
-                        id="generateQrCodeButton"
-                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full
-                               shadow-lg transform transition-all duration-200 ease-in-out
-                               hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 flex items-center justify-center space-x-2 mt-4"
-                    >
+                    <textarea id="qrCodeInput" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[200px]" placeholder='e.g., https://www.google.com'></textarea>
+                    <button id="generateQrCodeButton" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transform transition-all duration-200 ease-in-out hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 flex items-center justify-center space-x-2 mt-4">
                         <i class="fas fa-qrcode"></i> <span>Generate QR Code</span>
                     </button>
                 </div>
-
-                <!-- QR Code Output Column -->
                 <div class="flex-1 w-full md:w-1/2">
                     <label class="block text-gray-700 text-sm font-bold mb-2 text-left">Generated QR Code:</label>
                     <div id="qrCodeOutputContainer" class="p-4 bg-gray-50 border border-gray-300 rounded-lg flex flex-col items-center justify-center min-h-[200px] space-y-4">
                         <canvas id="qrCodeCanvas" class="hidden"></canvas>
                         <p id="qrCodePlaceholder" class="text-gray-500 text-sm">QR Code will appear here.</p>
-                        <button
-                            id="downloadQrCodeButton"
-                            class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full
-                                   shadow-md transform transition-all duration-200 ease-in-out
-                                   hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300 hidden flex items-center justify-center space-x-2"
-                        >
+                        <button id="downloadQrCodeButton" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full shadow-md transform transition-all duration-200 ease-in-out hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300 hidden flex items-center justify-center space-x-2">
                             <i class="fas fa-download"></i> <span>Download QR Code</span>
                         </button>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Markdown Viewer Section -->
+        <div id="markdownViewerSection" class="converter-section hidden">
+            <p class="text-gray-600 mb-8">Write Markdown on the left and see the rendered HTML on the right.</p>
+            <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 mb-6">
+                <button id="copyMarkdownHtmlButton" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-full shadow-md transform transition-all duration-200 ease-in-out hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-300 flex items-center justify-center space-x-2">
+                    <i class="fas fa-copy"></i> <span>Copy Rendered HTML</span>
+                </button>
+                <button id="downloadMarkdownHtmlButton" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-full shadow-md transform transition-all duration-200 ease-in-out hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300 flex items-center justify-center space-x-2">
+                    <i class="fas fa-download"></i> <span>Download HTML</span>
+                </button>
+            </div>
+            <div class="flex flex-col md:flex-row md:space-x-4 mb-6">
+                <div class="flex-1 w-full md:w-1/2 mb-4 md:mb-0">
+                    <label for="markdownInput" class="block text-gray-700 text-sm font-bold mb-2 text-left">Markdown Editor:</label>
+                    <textarea
+                        id="markdownInput"
+                        class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[400px]"
+                        placeholder="# Hello Markdown&#10;&#10;Write your content here..."
+                    ></textarea>
+                </div>
+                <div class="flex-1 w-full md:w-1/2">
+                    <label class="block text-gray-700 text-sm font-bold mb-2 text-left">Live Preview:</label>
+                    <div id="markdownPreview"></div>
                 </div>
             </div>
         </div>
@@ -319,56 +312,45 @@
         const tabJsonToCsv = document.getElementById('tabJsonToCsv');
         const tabJsonBeautifier = document.getElementById('tabJsonBeautifier');
         const tabTextDelimiter = document.getElementById('tabTextDelimiter');
-        const tabQrCodeGenerator = document.getElementById('tabQrCodeGenerator'); // New tab reference
+        const tabQrCodeGenerator = document.getElementById('tabQrCodeGenerator');
+        const tabMarkdownViewer = document.getElementById('tabMarkdownViewer');
 
         const csvToJsonSection = document.getElementById('csvToJsonSection');
         const jsonToCsvSection = document.getElementById('jsonToCsvSection');
         const jsonBeautifierSection = document.getElementById('jsonBeautifierSection');
         const textDelimiterSection = document.getElementById('textDelimiterSection');
-        const qrCodeGeneratorSection = document.getElementById('qrCodeGeneratorSection'); // New section reference
+        const qrCodeGeneratorSection = document.getElementById('qrCodeGeneratorSection');
+        const markdownViewerSection = document.getElementById('markdownViewerSection');
+
+        const downloadBeautifiedJsonButton = document.getElementById('downloadBeautifiedJsonButton');
+        const copyBeautifiedJsonButton = document.getElementById('copyBeautifiedJsonButton');
+        const downloadReplacedTextButton = document.getElementById('downloadReplacedTextButton');
+        const copyReplacedTextButton = document.getElementById('copyReplacedTextButton');
+        const downloadQrCodeButton = document.getElementById('downloadQrCodeButton');
+        const qrCodeCanvas = document.getElementById('qrCodeCanvas');
+        const qrCodePlaceholder = document.getElementById('qrCodePlaceholder');
+        const markdownPreview = document.getElementById('markdownPreview');
 
         // --- Utility Functions ---
 
-        /**
-         * Adjusts the height of a textarea to fit its content.
-         * @param {HTMLElement} textarea - The textarea element to adjust.
-         */
         function adjustTextareaHeight(textarea) {
-            textarea.style.height = 'auto'; // Reset height to recalculate
-            textarea.style.height = (textarea.scrollHeight + 2) + 'px'; // Set height to scrollHeight + a small buffer
+            textarea.style.height = 'auto';
+            textarea.style.height = (textarea.scrollHeight + 2) + 'px';
         }
 
-        /**
-         * Displays a message in the message box.
-         * @param {string} message - The message to display.
-         * @param {string} type - The type of message ('success', 'error', 'info').
-         */
         function showMessage(message, type) {
             messageBox.textContent = message;
             messageBox.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800', 'bg-blue-100', 'text-blue-800');
-            if (type === 'success') {
-                messageBox.classList.add('bg-green-100', 'text-green-800');
-            } else if (type === 'error') {
-                messageBox.classList.add('bg-red-100', 'text-red-800');
-            } else { // info
-                messageBox.classList.add('bg-blue-100', 'text-blue-800');
-            }
+            if (type === 'success') messageBox.classList.add('bg-green-100', 'text-green-800');
+            else if (type === 'error') messageBox.classList.add('bg-red-100', 'text-red-800');
+            else messageBox.classList.add('bg-blue-100', 'text-blue-800');
             messageBox.classList.remove('hidden');
         }
 
-        /**
-         * Hides the message box.
-         */
         function hideMessageBox() {
             messageBox.classList.add('hidden');
         }
 
-        /**
-         * Triggers the download of a text file.
-         * @param {string} textContent - The text string to download.
-         * @param {string} filename - The name of the file to download.
-         * @param {string} mimeType - The MIME type of the file (e.g., 'text/plain', 'application/json').
-         */
         function downloadText(textContent, filename, mimeType = 'text/plain') {
             const blob = new Blob([textContent], { type: `${mimeType};charset=utf-8;` });
             const link = document.createElement('a');
@@ -382,462 +364,234 @@
                 document.body.removeChild(link);
                 URL.revokeObjectURL(url);
             } else {
-                showMessage('Your browser does not support automatic downloads. Please copy the content manually from the text area.', 'info');
+                showMessage('Your browser does not support downloads.', 'info');
             }
         }
 
-        /**
-         * Copies text from a textarea to the clipboard.
-         * @param {HTMLElement} textarea - The textarea element containing the text to copy.
-         * @param {string} successMessage - Message to show on success.
-         * @param {string} errorMessage - Message to show on failure.
-         */
-        function copyTextFromTextarea(textarea, successMessage, errorMessage) {
-            if (textarea.value.trim() === '') {
-                showMessage('No content to copy.', 'error');
-                return;
-            }
+        function copyToClipboard(text, successMsg) {
+            const temp = document.createElement('textarea');
+            temp.value = text;
+            document.body.appendChild(temp);
+            temp.select();
             try {
-                textarea.select();
-                textarea.setSelectionRange(0, 99999); // For mobile devices
                 document.execCommand('copy');
-                showMessage(successMessage, 'success');
+                showMessage(successMsg, 'success');
             } catch (err) {
-                console.error('Failed to copy text: ', err);
-                showMessage(errorMessage, 'error');
+                showMessage('Failed to copy.', 'error');
             }
+            document.body.removeChild(temp);
         }
 
-        /**
-         * Switches the active tab and displays the corresponding converter section.
-         * @param {HTMLElement} activeTabButton - The button that was clicked.
-         * @param {HTMLElement} activeSection - The section to show.
-         */
         function switchTab(activeTabButton, activeSection) {
-            // Remove active class from all tab buttons
             document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-            // Add active class to the clicked tab button
             activeTabButton.classList.add('active');
-
-            // Hide all converter sections
             document.querySelectorAll('.converter-section').forEach(section => section.classList.add('hidden'));
-            // Show the active section
             activeSection.classList.remove('hidden');
-
-            // Clear messages and reset inputs when switching
             hideMessageBox();
 
-            // Reset CSV to JSON section
+            // Resets
             document.getElementById('csvFileInput').value = '';
             document.getElementById('convertCsvToJsonButton').disabled = true;
             document.getElementById('jsonOutputContainer').classList.add('hidden');
             document.getElementById('jsonOutput').value = '';
-
-            // Reset JSON to CSV section
             document.getElementById('jsonFileInput').value = '';
             document.getElementById('convertJsonToCsvButton').disabled = true;
-
-            // Reset JSON Lint section
-            jsonInputToBeautify.value = '';
+            
+            document.getElementById('jsonInputToBeautify').value = '';
             beautifiedJsonOutput.value = '';
-            beautifiedJsonOutput.style.height = '150px'; // Reset height
+            beautifiedJsonOutput.style.height = '150px';
             downloadBeautifiedJsonButton.classList.add('hidden');
             copyBeautifiedJsonButton.classList.add('hidden');
-
-            // Reset Text Delimiter section
-            textInputToReplace.value = '';
-            oldDelimiterInput.value = '';
-            newDelimiterInput.value = '';
-            replacedTextOutput.value = '';
-            replacedTextOutput.style.height = '150px'; // Reset height
+            
+            document.getElementById('textInputToReplace').value = '';
+            document.getElementById('oldDelimiterInput').value = '';
+            document.getElementById('newDelimiterInput').value = '';
+            document.getElementById('replacedTextOutput').value = '';
+            document.getElementById('replacedTextOutput').style.height = '150px';
             downloadReplacedTextButton.classList.add('hidden');
             copyReplacedTextButton.classList.add('hidden');
             
-            // Reset QR Code Generator section (New)
-            qrCodeInput.value = '';
+            document.getElementById('qrCodeInput').value = '';
             qrCodeCanvas.classList.add('hidden');
             qrCodePlaceholder.classList.remove('hidden');
             downloadQrCodeButton.classList.add('hidden');
+            
+            document.getElementById('markdownInput').value = '';
+            markdownPreview.innerHTML = '';
         }
 
-        // --- CSV to JSON Logic ---
-        const csvFileInput = document.getElementById('csvFileInput');
-        const convertCsvToJsonButton = document.getElementById('convertCsvToJsonButton');
-        const jsonOutput = document.getElementById('jsonOutput');
-        const jsonOutputContainer = document.getElementById('jsonOutputContainer');
-        const downloadJsonButton = document.getElementById('downloadJsonButton');
+        // --- CSV to JSON ---
+        csvFileInput.addEventListener('change', () => {
+            document.getElementById('convertCsvToJsonButton').disabled = csvFileInput.files.length === 0;
+            hideMessageBox();
+            document.getElementById('jsonOutputContainer').classList.add('hidden');
+        });
 
-        function parseCsvLine(line) {
-            const fields = [];
-            let inQuote = false;
-            let currentField = '';
+        document.getElementById('convertCsvToJsonButton').addEventListener('click', () => {
+            const file = csvFileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const res = convertCsvToJson(e.target.result);
+                    document.getElementById('jsonOutput').value = JSON.stringify(res, null, 2);
+                    document.getElementById('jsonOutputContainer').classList.remove('hidden');
+                    showMessage('Converted!', 'success');
+                } catch (err) { showMessage(err.message, 'error'); }
+            };
+            reader.readAsText(file);
+        });
 
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-
-                if (char === '"') {
-                    if (inQuote && line[i + 1] === '"') {
-                        currentField += '"';
-                        i++;
-                    } else {
-                        inQuote = !inQuote;
-                    }
-                } else if (char === ',' && !inQuote) {
-                    fields.push(currentField.trim());
-                    currentField = '';
-                } else {
-                    currentField += char;
-                }
-            }
-            fields.push(currentField.trim());
-            return fields;
-        }
+        document.getElementById('downloadJsonButton').addEventListener('click', () => {
+            downloadText(document.getElementById('jsonOutput').value, 'data.json', 'application/json');
+        });
 
         function convertCsvToJson(csvString) {
             const lines = csvString.split(/\r?\n/).filter(line => line.trim() !== '');
-
             if (lines.length === 0) return [];
-
             const headers = parseCsvLine(lines[0]);
             const jsonArray = [];
-
             for (let i = 1; i < lines.length; i++) {
-                const line = lines[i];
-                if (line.trim() === '') continue;
-
-                const rowValues = parseCsvLine(line);
-                const rowObject = {};
-
-                headers.forEach((header, index) => {
-                    rowObject[header] = rowValues[index] !== undefined ? rowValues[index] : '';
-                });
-                jsonArray.push(rowObject);
+                const rowValues = parseCsvLine(lines[i]);
+                const obj = {};
+                headers.forEach((h, idx) => obj[h] = rowValues[idx] || '');
+                jsonArray.push(obj);
             }
             return jsonArray;
         }
 
-        csvFileInput.addEventListener('change', () => {
-            if (csvFileInput.files.length > 0) {
-                convertCsvToJsonButton.disabled = false;
-                hideMessageBox();
-                jsonOutputContainer.classList.add('hidden');
-                jsonOutput.value = '';
-            } else {
-                convertCsvToJsonButton.disabled = true;
+        function parseCsvLine(line) {
+            const fields = [];
+            let inQuote = false, cur = '';
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"') {
+                    if (inQuote && line[i+1] === '"') { cur += '"'; i++; }
+                    else inQuote = !inQuote;
+                } else if (char === ',' && !inQuote) { fields.push(cur.trim()); cur = ''; }
+                else cur += char;
             }
-        });
-
-        convertCsvToJsonButton.addEventListener('click', () => {
-            const file = csvFileInput.files[0];
-            if (!file) {
-                showMessage('Please select a CSV file first.', 'error');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const csvString = e.target.result;
-                    const jsonResult = convertCsvToJson(csvString);
-                    jsonOutput.value = JSON.stringify(jsonResult, null, 2);
-                    jsonOutputContainer.classList.remove('hidden');
-                    showMessage('Conversion successful! You can now view and download the JSON.', 'success');
-                } catch (error) {
-                    console.error('Error processing CSV file:', error);
-                    showMessage(`Error processing CSV file: ${error.message}`, 'error');
-                    jsonOutputContainer.classList.add('hidden');
-                    jsonOutput.value = '';
-                }
-            };
-            reader.onerror = () => {
-                showMessage('Error reading CSV file.', 'error');
-                jsonOutputContainer.classList.add('hidden');
-                jsonOutput.value = '';
-            };
-            reader.readAsText(file);
-        });
-
-        downloadJsonButton.addEventListener('click', () => {
-            const jsonContent = jsonOutput.value;
-            if (jsonContent.trim() === '') {
-                showMessage('No JSON content to download.', 'error');
-                return;
-            }
-            const originalFilename = csvFileInput.files[0] ? csvFileInput.files[0].name : 'download';
-            const jsonFilename = originalFilename.replace(/\.csv$/, '.json').replace(/(\.\w+)$/, '.json');
-            downloadText(jsonContent, jsonFilename, 'application/json');
-        });
-
-        // --- JSON to CSV Logic ---
-        const jsonFileInput = document.getElementById('jsonFileInput');
-        const convertJsonToCsvButton = document.getElementById('convertJsonToCsvButton');
-
-        function convertJsonToCsv(jsonData) {
-            if (jsonData.length === 0) return '';
-
-            const allHeaders = new Set();
-            jsonData.forEach(obj => {
-                Object.keys(obj).forEach(key => allHeaders.add(key));
-            });
-            const headers = Array.from(allHeaders);
-
-            const csvRows = [];
-            csvRows.push(headers.map(header => `"${header}"`).join(','));
-
-            jsonData.forEach(row => {
-                const values = headers.map(header => {
-                    let value = row[header];
-                    if (value === null || value === undefined) {
-                        value = '';
-                    } else if (typeof value === 'object') {
-                        value = JSON.stringify(value);
-                    }
-                    const needsQuotes = String(value).includes(',') || String(value).includes('"') || String(value).includes('\n') || String(value).includes('\r');
-                    let escapedValue = String(value).replace(/"/g, '""');
-                    return needsQuotes ? `"${escapedValue}"` : escapedValue;
-                });
-                csvRows.push(values.join(','));
-            });
-
-            return csvRows.join('\n');
+            fields.push(cur.trim());
+            return fields;
         }
 
-        jsonFileInput.addEventListener('change', () => {
-            if (jsonFileInput.files.length > 0) {
-                convertJsonToCsvButton.disabled = false;
-                hideMessageBox();
-            } else {
-                convertJsonToCsvButton.disabled = true;
-            }
+        // --- JSON to CSV ---
+        document.getElementById('jsonFileInput').addEventListener('change', () => {
+            document.getElementById('convertJsonToCsvButton').disabled = document.getElementById('jsonFileInput').files.length === 0;
+            hideMessageBox();
         });
 
-        convertJsonToCsvButton.addEventListener('click', () => {
-            const file = jsonFileInput.files[0];
-            if (!file) {
-                showMessage('Please select a JSON file first.', 'error');
-                return;
-            }
-
+        document.getElementById('convertJsonToCsvButton').addEventListener('click', () => {
+            const file = document.getElementById('jsonFileInput').files[0];
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
-                    const jsonString = e.target.result;
-                    const data = JSON.parse(jsonString);
-
-                    if (!Array.isArray(data) || data.length === 0 || typeof data[0] !== 'object' || data[0] === null) {
-                        showMessage('Invalid JSON format. Expected an array of objects for CSV conversion.', 'error');
-                        return;
-                    }
-
-                    const csvContent = convertJsonToCsv(data);
-                    downloadText(csvContent, file.name.replace('.json', '.csv'), 'text/csv');
-                    showMessage('Conversion successful! Your CSV file is downloading.', 'success');
-                } catch (error) {
-                    console.error('Error processing JSON file for CSV conversion:', error);
-                    showMessage(`Error processing JSON file for CSV conversion: ${error.message}`, 'error');
-                }
-            };
-            reader.onerror = () => {
-                showMessage('Error reading JSON file for CSV conversion.', 'error');
+                    const data = JSON.parse(e.target.result);
+                    const csv = convertJsonToCsv(data);
+                    downloadText(csv, 'data.csv', 'text/csv');
+                    showMessage('CSV Downloading...', 'success');
+                } catch (err) { showMessage('Invalid JSON', 'error'); }
             };
             reader.readAsText(file);
         });
 
-        // --- JSON Lint Logic ---
-        const jsonInputToBeautify = document.getElementById('jsonInputToBeautify');
-        const beautifyJsonButton = document.getElementById('beautifyJsonButton');
-        const beautifiedJsonOutput = document.getElementById('beautifiedJsonOutput');
-        const downloadBeautifiedJsonButton = document.getElementById('downloadBeautifiedJsonButton');
-        const copyBeautifiedJsonButton = document.getElementById('copyBeautifiedJsonButton');
+        function convertJsonToCsv(jsonData) {
+            if (!jsonData.length) return '';
+            const keys = Array.from(new Set(jsonData.flatMap(Object.keys)));
+            const rows = [keys.join(',')];
+            jsonData.forEach(item => {
+                rows.push(keys.map(k => {
+                    let v = item[k] === null || item[k] === undefined ? '' : item[k];
+                    if (typeof v === 'object') v = JSON.stringify(v);
+                    v = String(v).replace(/"/g, '""');
+                    return v.includes(',') || v.includes('"') || v.includes('\n') ? `"${v}"` : v;
+                }).join(','));
+            });
+            return rows.join('\n');
+        }
 
-        beautifyJsonButton.addEventListener('click', () => {
-            const inputString = jsonInputToBeautify.value.trim();
+        // --- JSON Lint ---
+        document.getElementById('beautifyJsonButton').addEventListener('click', () => {
+            const val = document.getElementById('jsonInputToBeautify').value.trim();
             hideMessageBox();
-            beautifiedJsonOutput.value = '';
-            beautifiedJsonOutput.style.height = 'auto';
-            downloadBeautifiedJsonButton.classList.add('hidden');
-            copyBeautifiedJsonButton.classList.add('hidden');
-
-
-            if (inputString === '') {
-                showMessage('Please paste a JSON string to lint and beautify.', 'info');
-                return;
-            }
-
+            if (!val) { showMessage('Paste JSON first', 'info'); return; }
             try {
-                const parsedJson = JSON.parse(inputString);
-                const beautifiedString = JSON.stringify(parsedJson, null, 2);
-                beautifiedJsonOutput.value = beautifiedString;
-                adjustTextareaHeight(beautifiedJsonOutput);
+                const parsed = JSON.parse(val);
+                document.getElementById('beautifiedJsonOutput').value = JSON.stringify(parsed, null, 2);
+                adjustTextareaHeight(document.getElementById('beautifiedJsonOutput'));
                 downloadBeautifiedJsonButton.classList.remove('hidden');
                 copyBeautifiedJsonButton.classList.remove('hidden');
-                showMessage('JSON linted and beautified successfully!', 'success');
-            } catch (error) {
-                console.error('Error parsing JSON for linting/beautification:', error);
-                showMessage(`Invalid JSON format: ${error.message}. Please check your input.`, 'error');
-            }
+                showMessage('JSON Beautified', 'success');
+            } catch (err) { showMessage(err.message, 'error'); }
         });
 
-        downloadBeautifiedJsonButton.addEventListener('click', () => {
-            const jsonContent = beautifiedJsonOutput.value;
-            if (jsonContent.trim() === '') {
-                showMessage('No beautified JSON content to download.', 'error');
-                return;
-            }
-            const filename = 'beautified_json.json';
-            downloadText(jsonContent, filename, 'application/json');
-        });
+        downloadBeautifiedJsonButton.addEventListener('click', () => downloadText(document.getElementById('beautifiedJsonOutput').value, 'pretty.json', 'application/json'));
+        copyBeautifiedJsonButton.addEventListener('click', () => copyToClipboard(document.getElementById('beautifiedJsonOutput').value, 'JSON Copied!'));
 
-        copyBeautifiedJsonButton.addEventListener('click', () => {
-            copyTextFromTextarea(beautifiedJsonOutput, 'Beautified JSON copied to clipboard!', 'Failed to copy JSON. Please copy manually.');
-        });
-
-        // --- Text Delimiter Logic ---
-        const textInputToReplace = document.getElementById('textInputToReplace');
-        const oldDelimiterInput = document.getElementById('oldDelimiterInput');
-        const newDelimiterInput = document.getElementById('newDelimiterInput');
-        const replaceDelimiterButton = document.getElementById('replaceDelimiterButton');
-        const replacedTextOutput = document.getElementById('replacedTextOutput');
-        const downloadReplacedTextButton = document.getElementById('downloadReplacedTextButton');
-        const copyReplacedTextButton = document.getElementById('copyReplacedTextButton');
-
-        replaceDelimiterButton.addEventListener('click', () => {
-            const inputText = textInputToReplace.value;
-            const oldDelimiter = oldDelimiterInput.value;
-            const newDelimiter = newDelimiterInput.value;
-
+        // --- Text Delimiter ---
+        document.getElementById('replaceDelimiterButton').addEventListener('click', () => {
+            const input = document.getElementById('textInputToReplace').value;
+            const oldD = document.getElementById('oldDelimiterInput').value;
+            const newD = document.getElementById('newDelimiterInput').value;
             hideMessageBox();
-            replacedTextOutput.value = '';
-            replacedTextOutput.style.height = 'auto';
-            downloadReplacedTextButton.classList.add('hidden');
-            copyReplacedTextButton.classList.add('hidden');
-
-            if (inputText.trim() === '') {
-                showMessage('Please paste some text to perform replacement.', 'info');
-                return;
-            }
-
-            if (oldDelimiter.length === 0) {
-                showMessage('Please enter the delimiter you want to replace.', 'error');
-                return;
-            }
-
-            try {
-                const replacedText = inputText.replaceAll(oldDelimiter, newDelimiter);
-                replacedTextOutput.value = replacedText;
-                adjustTextareaHeight(replacedTextOutput);
-                downloadReplacedTextButton.classList.remove('hidden');
-                copyReplacedTextButton.classList.remove('hidden');
-                showMessage('Delimiter replacement successful!', 'success');
-            } catch (error) {
-                console.error('Error during text replacement:', error);
-                showMessage(`Error during replacement: ${error.message}`, 'error');
-            }
+            if (!input) return showMessage('Paste text', 'info');
+            if (!oldD) return showMessage('Enter old delimiter', 'error');
+            const result = input.replaceAll(oldD, newD);
+            document.getElementById('replacedTextOutput').value = result;
+            adjustTextareaHeight(document.getElementById('replacedTextOutput'));
+            downloadReplacedTextButton.classList.remove('hidden');
+            copyReplacedTextButton.classList.remove('hidden');
+            showMessage('Replaced!', 'success');
         });
 
-        downloadReplacedTextButton.addEventListener('click', () => {
-            const textContent = replacedTextOutput.value;
-            if (textContent.trim() === '') {
-                showMessage('No replaced text content to download.', 'error');
-                return;
-            }
-            downloadText(textContent, 'replaced_text.txt', 'text/plain');
-        });
+        downloadReplacedTextButton.addEventListener('click', () => downloadText(document.getElementById('replacedTextOutput').value, 'replaced.txt'));
+        copyReplacedTextButton.addEventListener('click', () => copyToClipboard(document.getElementById('replacedTextOutput').value, 'Text Copied!'));
 
-        copyReplacedTextButton.addEventListener('click', () => {
-            copyTextFromTextarea(replacedTextOutput, 'Replaced text copied to clipboard!', 'Failed to copy text. Please copy manually.');
-        });
-        
-        // --- QR Code Generator Logic (New) ---
-        const qrCodeInput = document.getElementById('qrCodeInput');
-        const generateQrCodeButton = document.getElementById('generateQrCodeButton');
-        const qrCodeCanvas = document.getElementById('qrCodeCanvas');
-        const qrCodePlaceholder = document.getElementById('qrCodePlaceholder');
-        const downloadQrCodeButton = document.getElementById('downloadQrCodeButton');
-        
-        // Initialize QRious instance (will be configured on generation)
+        // --- QR Code ---
         let qr = new QRious({ element: qrCodeCanvas, size: 256 });
-        
-        generateQrCodeButton.addEventListener('click', () => {
-            const data = qrCodeInput.value.trim();
+        document.getElementById('generateQrCodeButton').addEventListener('click', () => {
+            const val = document.getElementById('qrCodeInput').value.trim();
             hideMessageBox();
-            
-            if (data === '') {
-                showMessage('Please enter some text or a link to generate the QR code.', 'error');
-                qrCodeCanvas.classList.add('hidden');
-                qrCodePlaceholder.classList.remove('hidden');
-                downloadQrCodeButton.classList.add('hidden');
-                return;
-            }
-
-            try {
-                qr.set({
-                    value: data,
-                    size: 256, // Fixed size for clean display
-                    foreground: '#1F2937', // dark gray
-                    background: '#ffffff'
-                });
-                
-                qrCodeCanvas.classList.remove('hidden');
-                qrCodePlaceholder.classList.add('hidden');
-                downloadQrCodeButton.classList.remove('hidden');
-                showMessage('QR Code generated successfully!', 'success');
-            } catch (error) {
-                console.error('Error generating QR code:', error);
-                showMessage('Failed to generate QR code. Check the input data.', 'error');
-                qrCodeCanvas.classList.add('hidden');
-                qrCodePlaceholder.classList.remove('hidden');
-                downloadQrCodeButton.classList.add('hidden');
-            }
+            if (!val) return showMessage('Enter text/link', 'error');
+            qr.set({ value: val, foreground: '#1F2937' });
+            qrCodeCanvas.classList.remove('hidden');
+            qrCodePlaceholder.classList.add('hidden');
+            downloadQrCodeButton.classList.remove('hidden');
+            showMessage('QR Generated', 'success');
         });
-        
+
         downloadQrCodeButton.addEventListener('click', () => {
-            if (qrCodeCanvas.classList.contains('hidden')) {
-                 showMessage('Generate a QR code first before attempting to download.', 'error');
-                 return;
-            }
-
-            // Get data URL from canvas and trigger download
-            const dataURL = qrCodeCanvas.toDataURL("image/png");
             const link = document.createElement('a');
-            link.href = dataURL;
-            link.download = 'qrcode_nanaboison.png';
-            document.body.appendChild(link);
+            link.href = qrCodeCanvas.toDataURL("image/png");
+            link.download = 'qrcode.png';
             link.click();
-            document.body.removeChild(link);
-            
-            showMessage('QR code image downloaded!', 'success');
         });
 
-
-        // --- Tab Navigation Event Listeners ---
-        tabCsvToJson.addEventListener('click', () => {
-            switchTab(tabCsvToJson, csvToJsonSection);
+        // --- Markdown Viewer ---
+        document.getElementById('markdownInput').addEventListener('input', () => {
+            markdownPreview.innerHTML = marked.parse(document.getElementById('markdownInput').value);
         });
 
-        tabJsonToCsv.addEventListener('click', () => {
-            switchTab(tabJsonToCsv, jsonToCsvSection);
+        document.getElementById('copyMarkdownHtmlButton').addEventListener('click', () => {
+            if (!markdownPreview.innerHTML) return showMessage('Write markdown first', 'info');
+            copyToClipboard(markdownPreview.innerHTML, 'HTML Copied!');
         });
 
-        tabJsonBeautifier.addEventListener('click', () => {
-            switchTab(tabJsonBeautifier, jsonBeautifierSection);
+        document.getElementById('downloadMarkdownHtmlButton').addEventListener('click', () => {
+            if (!markdownPreview.innerHTML) return showMessage('Write markdown first', 'info');
+            const fullHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Rendered Markdown</title><style>body{font-family:sans-serif;padding:2em;}</style></head><body>${markdownPreview.innerHTML}</body></html>`;
+            downloadText(fullHtml, 'rendered.html', 'text/html');
         });
 
-        tabTextDelimiter.addEventListener('click', () => {
-            switchTab(tabTextDelimiter, textDelimiterSection);
-        });
-        
-        tabQrCodeGenerator.addEventListener('click', () => {
-            switchTab(tabQrCodeGenerator, qrCodeGeneratorSection);
-        });
+        // --- Tab Listeners ---
+        tabCsvToJson.addEventListener('click', () => switchTab(tabCsvToJson, csvToJsonSection));
+        tabJsonToCsv.addEventListener('click', () => switchTab(tabJsonToCsv, jsonToCsvSection));
+        tabJsonBeautifier.addEventListener('click', () => switchTab(tabJsonBeautifier, jsonBeautifierSection));
+        tabTextDelimiter.addEventListener('click', () => switchTab(tabTextDelimiter, textDelimiterSection));
+        tabQrCodeGenerator.addEventListener('click', () => switchTab(tabQrCodeGenerator, qrCodeGeneratorSection));
+        tabMarkdownViewer.addEventListener('click', () => switchTab(tabMarkdownViewer, markdownViewerSection));
 
-
-        // Initialize the app by showing the CSV to JSON section by default
         document.addEventListener('DOMContentLoaded', () => {
-            // Set initial state for all buttons/sections
-            convertCsvToJsonButton.disabled = true;
-            convertJsonToCsvButton.disabled = true;
-            switchTab(tabCsvToJson, csvToJsonSection); // Explicitly set initial tab
+            switchTab(tabCsvToJson, csvToJsonSection);
         });
     </script>
 </body>
