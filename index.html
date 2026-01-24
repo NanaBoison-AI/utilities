@@ -74,6 +74,9 @@
             <button id="tabJsonBeautifier" class="tab-button py-2 px-4 rounded-full text-gray-700 font-semibold transition-all duration-200 hover:bg-blue-500 hover:text-white ml-2">
                 JSON Lint
             </button>
+            <button id="tabJsonStringify" class="tab-button py-2 px-4 rounded-full text-gray-700 font-semibold transition-all duration-200 hover:bg-blue-500 hover:text-white ml-2">
+                JSON Stringify
+            </button>
             <button id="tabTextDelimiter" class="tab-button py-2 px-4 rounded-full text-gray-700 font-semibold transition-all duration-200 hover:bg-blue-500 hover:text-white ml-2">
                 Text Delimiter
             </button>
@@ -207,6 +210,56 @@
             </div>
         </div>
 
+        <!-- JSON Stringify Section -->
+        <div id="jsonStringifySection" class="converter-section hidden">
+            <p class="text-gray-600 mb-8">Convert JSON to an escaped string literal or parse a string literal back to JSON.</p>
+            <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 mb-6">
+                <button
+                    id="jsonToStringButton"
+                    class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full
+                           shadow-lg transform transition-all duration-200 ease-in-out
+                           hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 flex items-center justify-center space-x-2"
+                >
+                    <i class="fas fa-quote-right"></i> <span>JSON to String</span>
+                </button>
+                <button
+                    id="stringToJsonButton"
+                    class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-full
+                           shadow-lg transform transition-all duration-200 ease-in-out
+                           hover:scale-105 focus:outline-none focus:ring-4 focus:ring-purple-300 flex items-center justify-center space-x-2"
+                >
+                    <i class="fas fa-brackets-curly"></i> <span>String to JSON</span>
+                </button>
+                <button
+                    id="copyStringifyResultButton"
+                    class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-full
+                           shadow-md transform transition-all duration-200 ease-in-out
+                           hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-300 hidden flex items-center justify-center space-x-2"
+                >
+                    <i class="fas fa-copy"></i> <span>Copy Result</span>
+                </button>
+            </div>
+            <div class="flex flex-col md:flex-row md:space-x-4 mb-6">
+                <div class="flex-1 w-full md:w-1/2 mb-4 md:mb-0">
+                    <label for="stringifyInput" class="block text-gray-700 text-sm font-bold mb-2 text-left">Input:</label>
+                    <textarea
+                        id="stringifyInput"
+                        class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[300px]"
+                        placeholder='Paste JSON object or escaped string here...'
+                    ></textarea>
+                </div>
+                <div class="flex-1 w-full md:w-1/2">
+                    <label for="stringifyOutput" class="block text-gray-700 text-sm font-bold mb-2 text-left">Output:</label>
+                    <textarea
+                        id="stringifyOutput"
+                        class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        readonly
+                        rows="1"
+                    ></textarea>
+                </div>
+            </div>
+        </div>
+
         <!-- Text Delimiter Section -->
         <div id="textDelimiterSection" class="converter-section hidden">
             <p class="text-gray-600 mb-8">Paste your text and replace one delimiter with another.</p>
@@ -311,6 +364,7 @@
         const tabCsvToJson = document.getElementById('tabCsvToJson');
         const tabJsonToCsv = document.getElementById('tabJsonToCsv');
         const tabJsonBeautifier = document.getElementById('tabJsonBeautifier');
+        const tabJsonStringify = document.getElementById('tabJsonStringify');
         const tabTextDelimiter = document.getElementById('tabTextDelimiter');
         const tabQrCodeGenerator = document.getElementById('tabQrCodeGenerator');
         const tabMarkdownViewer = document.getElementById('tabMarkdownViewer');
@@ -318,12 +372,20 @@
         const csvToJsonSection = document.getElementById('csvToJsonSection');
         const jsonToCsvSection = document.getElementById('jsonToCsvSection');
         const jsonBeautifierSection = document.getElementById('jsonBeautifierSection');
+        const jsonStringifySection = document.getElementById('jsonStringifySection');
         const textDelimiterSection = document.getElementById('textDelimiterSection');
         const qrCodeGeneratorSection = document.getElementById('qrCodeGeneratorSection');
         const markdownViewerSection = document.getElementById('markdownViewerSection');
 
         const downloadBeautifiedJsonButton = document.getElementById('downloadBeautifiedJsonButton');
         const copyBeautifiedJsonButton = document.getElementById('copyBeautifiedJsonButton');
+        
+        const jsonToStringButton = document.getElementById('jsonToStringButton');
+        const stringToJsonButton = document.getElementById('stringToJsonButton');
+        const copyStringifyResultButton = document.getElementById('copyStringifyResultButton');
+        const stringifyInput = document.getElementById('stringifyInput');
+        const stringifyOutput = document.getElementById('stringifyOutput');
+
         const downloadReplacedTextButton = document.getElementById('downloadReplacedTextButton');
         const copyReplacedTextButton = document.getElementById('copyReplacedTextButton');
         const downloadQrCodeButton = document.getElementById('downloadQrCodeButton');
@@ -398,10 +460,15 @@
             document.getElementById('convertJsonToCsvButton').disabled = true;
             
             document.getElementById('jsonInputToBeautify').value = '';
-            beautifiedJsonOutput.value = '';
-            beautifiedJsonOutput.style.height = '150px';
+            document.getElementById('beautifiedJsonOutput').value = '';
+            document.getElementById('beautifiedJsonOutput').style.height = '150px';
             downloadBeautifiedJsonButton.classList.add('hidden');
             copyBeautifiedJsonButton.classList.add('hidden');
+
+            stringifyInput.value = '';
+            stringifyOutput.value = '';
+            stringifyOutput.style.height = '150px';
+            copyStringifyResultButton.classList.add('hidden');
             
             document.getElementById('textInputToReplace').value = '';
             document.getElementById('oldDelimiterInput').value = '';
@@ -421,14 +488,14 @@
         }
 
         // --- CSV to JSON ---
-        csvFileInput.addEventListener('change', () => {
-            document.getElementById('convertCsvToJsonButton').disabled = csvFileInput.files.length === 0;
+        document.getElementById('csvFileInput').addEventListener('change', () => {
+            document.getElementById('convertCsvToJsonButton').disabled = document.getElementById('csvFileInput').files.length === 0;
             hideMessageBox();
             document.getElementById('jsonOutputContainer').classList.add('hidden');
         });
 
         document.getElementById('convertCsvToJsonButton').addEventListener('click', () => {
-            const file = csvFileInput.files[0];
+            const file = document.getElementById('csvFileInput').files[0];
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
@@ -527,6 +594,44 @@
         downloadBeautifiedJsonButton.addEventListener('click', () => downloadText(document.getElementById('beautifiedJsonOutput').value, 'pretty.json', 'application/json'));
         copyBeautifiedJsonButton.addEventListener('click', () => copyToClipboard(document.getElementById('beautifiedJsonOutput').value, 'JSON Copied!'));
 
+        // --- JSON Stringify (JSON <-> String) ---
+        jsonToStringButton.addEventListener('click', () => {
+            const val = stringifyInput.value.trim();
+            hideMessageBox();
+            if (!val) return showMessage('Paste JSON first', 'info');
+            try {
+                const parsed = JSON.parse(val);
+                // First stringify to compact, then stringify the string to get escapes
+                stringifyOutput.value = JSON.stringify(JSON.stringify(parsed));
+                adjustTextareaHeight(stringifyOutput);
+                copyStringifyResultButton.classList.remove('hidden');
+                showMessage('Converted to escaped string!', 'success');
+            } catch (err) { showMessage('Invalid JSON Object', 'error'); }
+        });
+
+        stringToJsonButton.addEventListener('click', () => {
+            const val = stringifyInput.value.trim();
+            hideMessageBox();
+            if (!val) return showMessage('Paste escaped string first', 'info');
+            try {
+                // If it starts and ends with quotes, parse it twice
+                let result = val;
+                // Attempt to parse the string literal first
+                if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+                   result = JSON.parse(val);
+                }
+                const parsedObj = JSON.parse(result);
+                stringifyOutput.value = JSON.stringify(parsedObj, null, 2);
+                adjustTextareaHeight(stringifyOutput);
+                copyStringifyResultButton.classList.remove('hidden');
+                showMessage('Parsed to JSON object!', 'success');
+            } catch (err) { showMessage('Invalid escaped string or JSON', 'error'); }
+        });
+
+        copyStringifyResultButton.addEventListener('click', () => {
+            copyToClipboard(stringifyOutput.value, 'Result Copied!');
+        });
+
         // --- Text Delimiter ---
         document.getElementById('replaceDelimiterButton').addEventListener('click', () => {
             const input = document.getElementById('textInputToReplace').value;
@@ -586,6 +691,7 @@
         tabCsvToJson.addEventListener('click', () => switchTab(tabCsvToJson, csvToJsonSection));
         tabJsonToCsv.addEventListener('click', () => switchTab(tabJsonToCsv, jsonToCsvSection));
         tabJsonBeautifier.addEventListener('click', () => switchTab(tabJsonBeautifier, jsonBeautifierSection));
+        tabJsonStringify.addEventListener('click', () => switchTab(tabJsonStringify, jsonStringifySection));
         tabTextDelimiter.addEventListener('click', () => switchTab(tabTextDelimiter, textDelimiterSection));
         tabQrCodeGenerator.addEventListener('click', () => switchTab(tabQrCodeGenerator, qrCodeGeneratorSection));
         tabMarkdownViewer.addEventListener('click', () => switchTab(tabMarkdownViewer, markdownViewerSection));
