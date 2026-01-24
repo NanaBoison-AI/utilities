@@ -4,325 +4,405 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NanaBoison Utilities</title>
-    <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://i.postimg.cc/gwDSdNBh/icon.png">
-    
-    <!-- Tailwind CSS CDN for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome CDN for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- QRious library for client-side QR code generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
-    <!-- Marked library for Markdown rendering -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
     <style>
-        /* Custom font for a clean look */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
         body {
-            font-family: "Inter", sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
         }
-        /* Custom styles for the textarea to ensure it's readable */
-        textarea {
-            resize: vertical; /* Allow vertical resizing for user */
-            min-height: 150px; /* Minimum height for all textareas, except where specifically overridden */
-            overflow: auto; /* Default to auto scroll if content exceeds size */
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(252, 161, 125, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(139, 92, 246, 0.3) 0%, transparent 50%);
+            animation: gradientShift 15s ease infinite;
+            pointer-events: none;
         }
+        
+        @keyframes gradientShift {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        }
+        
+        .tab-button {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .tab-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .tab-button:hover::before {
+            left: 100%;
+        }
+        
         .tab-button.active {
-            background-color: #3B82F6; /* blue-600 */
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(102, 126, 234, 0.4);
         }
-        /* Markdown Preview Styling */
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn-primary:hover::after {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px -5px rgba(102, 126, 234, 0.5);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        
+        .btn-success:hover {
+            box-shadow: 0 15px 35px -5px rgba(17, 153, 142, 0.5);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #434343 0%, #000000 100%);
+        }
+        
+        .btn-secondary:hover {
+            box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.5);
+        }
+        
+        .btn-purple {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #4a5568;
+        }
+        
+        .btn-purple:hover {
+            box-shadow: 0 15px 35px -5px rgba(168, 237, 234, 0.5);
+        }
+        
+        textarea, input[type="text"] {
+            transition: all 0.3s ease;
+        }
+        
+        textarea:focus, input[type="text"]:focus {
+            transform: scale(1.01);
+            box-shadow: 0 10px 30px -5px rgba(102, 126, 234, 0.2);
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .file-input {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            cursor: pointer;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 1rem 2rem;
+            border-radius: 9999px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .file-input:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px -5px rgba(245, 87, 108, 0.5);
+        }
+        
+        .file-input input[type=file] {
+            position: absolute;
+            top: 0;
+            right: 0;
+            margin: 0;
+            padding: 0;
+            font-size: 20px;
+            cursor: pointer;
+            opacity: 0;
+            filter: alpha(opacity=0);
+        }
+        
         #markdownPreview {
-            text-align: left;
-            padding: 1rem;
-            background-color: #f9fafb;
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;
-            min-height: 300px;
-            overflow-y: auto;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
         }
-        #markdownPreview h1 { font-size: 2em; font-weight: bold; margin-bottom: 0.5em; border-bottom: 1px solid #eaecef; }
-        #markdownPreview h2 { font-size: 1.5em; font-weight: bold; margin-bottom: 0.5em; border-bottom: 1px solid #eaecef; }
-        #markdownPreview h3 { font-size: 1.25em; font-weight: bold; margin-bottom: 0.5em; }
-        #markdownPreview p { margin-bottom: 1em; line-height: 1.6; }
-        #markdownPreview ul { list-style-type: disc; padding-left: 2em; margin-bottom: 1em; }
-        #markdownPreview ol { list-style-type: decimal; padding-left: 2em; margin-bottom: 1em; }
-        #markdownPreview code { background-color: rgba(27,31,35,.05); padding: .2em .4em; border-radius: 3px; font-family: monospace; }
-        #markdownPreview pre { background-color: #f6f8fa; padding: 1em; border-radius: 3px; overflow: auto; margin-bottom: 1em; }
-        #markdownPreview blockquote { border-left: .25em solid #dfe2e5; color: #6a737d; padding: 0 1em; margin-bottom: 1em; }
-        #markdownPreview a { color: #0366d6; text-decoration: none; }
-        #markdownPreview a:hover { text-decoration: underline; }
-        #markdownPreview table { border-collapse: collapse; width: 100%; margin-bottom: 1em; }
-        #markdownPreview th, #markdownPreview td { border: 1px solid #dfe2e5; padding: 6px 13px; }
-        #markdownPreview tr:nth-child(2n) { background-color: #f6f8fa; }
+        
+        #markdownPreview h1 { 
+            font-size: 2em; 
+            font-weight: 800; 
+            margin-bottom: 0.5em; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        #markdownPreview h2 { 
+            font-size: 1.5em; 
+            font-weight: 700; 
+            margin-bottom: 0.5em; 
+            color: #667eea;
+            border-bottom: 1px solid #e5e7eb; 
+        }
+        
+        .message-box {
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .icon-animate {
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+        
+        button:hover .icon-animate {
+            transform: scale(1.2) rotate(5deg);
+        }
+        
+        .qr-container {
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+        }
     </style>
 </head>
-<body class="bg-gradient-to-br from-blue-100 to-purple-200 min-h-screen flex items-center justify-center p-4">
-    <div class="bg-white p-8 rounded-xl shadow-2xl w-full md:w-4/5 lg:w-3/4 text-center border border-gray-200">
+<body class="flex items-center justify-center p-4 min-h-screen">
+    <div class="glass-card p-8 rounded-3xl w-full max-w-6xl text-center fade-in" style="animation-delay: 0.1s;">
         
         <!-- Header -->
-        <h1 class="text-3xl font-extrabold text-gray-800 mb-8">NanaBoison Utilities</h1>
+        <div class="mb-10">
+            <h1 class="text-5xl font-extrabold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600">
+                NanaBoison Utilities
+            </h1>
+            <p class="text-gray-600 text-sm">Powerful tools for developers and creators</p>
+        </div>
 
         <!-- Navigation Tabs -->
-        <div class="flex justify-center mb-8 bg-gray-100 rounded-full p-1 shadow-inner flex-wrap">
-            <button id="tabCsvToJson" class="tab-button active py-2 px-4 rounded-full text-gray-700 font-semibold transition-all duration-200 hover:bg-blue-500 hover:text-white">
-                CSV to JSON
+        <div class="flex justify-center mb-8 bg-white bg-opacity-50 rounded-2xl p-2 shadow-inner flex-wrap gap-2">
+            <button id="tabCsvToJson" class="tab-button active py-3 px-6 rounded-xl font-semibold text-sm">
+                <i class="fas fa-file-csv icon-animate mr-2"></i>CSV to JSON
             </button>
-            <button id="tabJsonToCsv" class="tab-button py-2 px-4 rounded-full text-gray-700 font-semibold transition-all duration-200 hover:bg-blue-500 hover:text-white ml-2">
-                JSON to CSV
+            <button id="tabJsonToCsv" class="tab-button py-3 px-6 rounded-xl font-semibold text-sm">
+                <i class="fas fa-table icon-animate mr-2"></i>JSON to CSV
             </button>
-            <button id="tabJsonBeautifier" class="tab-button py-2 px-4 rounded-full text-gray-700 font-semibold transition-all duration-200 hover:bg-blue-500 hover:text-white ml-2">
-                JSON Lint
+            <button id="tabJsonBeautifier" class="tab-button py-3 px-6 rounded-xl font-semibold text-sm">
+                <i class="fas fa-code icon-animate mr-2"></i>JSON Lint
             </button>
-            <button id="tabJsonStringify" class="tab-button py-2 px-4 rounded-full text-gray-700 font-semibold transition-all duration-200 hover:bg-blue-500 hover:text-white ml-2">
-                JSON Stringify
+            <button id="tabJsonStringify" class="tab-button py-3 px-6 rounded-xl font-semibold text-sm">
+                <i class="fas fa-quote-right icon-animate mr-2"></i>Stringify
             </button>
-            <button id="tabTextDelimiter" class="tab-button py-2 px-4 rounded-full text-gray-700 font-semibold transition-all duration-200 hover:bg-blue-500 hover:text-white ml-2">
-                Text Delimiter
+            <button id="tabTextDelimiter" class="tab-button py-3 px-6 rounded-xl font-semibold text-sm">
+                <i class="fas fa-exchange-alt icon-animate mr-2"></i>Delimiter
             </button>
-            <button id="tabQrCodeGenerator" class="tab-button py-2 px-4 rounded-full text-gray-700 font-semibold transition-all duration-200 hover:bg-blue-500 hover:text-white ml-2">
-                QR Code
+            <button id="tabQrCodeGenerator" class="tab-button py-3 px-6 rounded-xl font-semibold text-sm">
+                <i class="fas fa-qrcode icon-animate mr-2"></i>QR Code
             </button>
-            <button id="tabMarkdownViewer" class="tab-button py-2 px-4 rounded-full text-gray-700 font-semibold transition-all duration-200 hover:bg-blue-500 hover:text-white ml-2">
-                Markdown
+            <button id="tabMarkdownViewer" class="tab-button py-3 px-6 rounded-xl font-semibold text-sm">
+                <i class="fab fa-markdown icon-animate mr-2"></i>Markdown
             </button>
         </div>
 
-        <!-- Message display area (global for all apps) -->
-        <div id="messageBox" class="mb-4 p-3 text-sm rounded-lg hidden text-left" role="alert"></div>
+        <!-- Message Box -->
+        <div id="messageBox" class="message-box mb-6 p-4 text-sm rounded-xl hidden text-left shadow-lg" role="alert"></div>
 
         <!-- CSV to JSON Section -->
-        <div id="csvToJsonSection" class="converter-section">
-            <p class="text-gray-600 mb-8">Upload your CSV file to convert it into a structured JSON format.</p>
-            <input
-                type="file"
-                id="csvFileInput"
-                accept=".csv"
-                class="block w-full text-sm text-gray-500
-                       file:mr-4 file:py-2 file:px-4
-                       file:rounded-full file:border-0
-                       file:text-sm file:font-semibold
-                       file:bg-blue-50 file:text-blue-700
-                       hover:file:bg-blue-100 mb-6 cursor-pointer"
-            />
-            <button
-                id="convertCsvToJsonButton"
-                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full
-                       shadow-lg transform transition-all duration-200 ease-in-out
-                       hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300
-                       disabled:opacity50 disabled:cursor-not-allowed mb-6"
-                disabled
-            >
-                Convert to JSON
+        <div id="csvToJsonSection" class="converter-section fade-in">
+            <p class="text-gray-600 mb-8 text-lg">Transform your CSV files into structured JSON format</p>
+            <label class="file-input mb-6 block w-full md:w-auto inline-block">
+                <i class="fas fa-upload mr-2"></i>Choose CSV File
+                <input type="file" id="csvFileInput" accept=".csv" />
+            </label>
+            <button id="convertCsvToJsonButton" class="btn-primary w-full text-white font-bold py-4 px-8 rounded-2xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed mb-6" disabled>
+                <i class="fas fa-sync-alt icon-animate mr-2"></i>Convert to JSON
             </button>
 
-            <div id="jsonOutputContainer" class="hidden mt-6 text-left">
-                <label for="jsonOutput" class="block text-gray-700 text-sm font-bold mb-2">Generated JSON:</label>
-                <textarea
-                    id="jsonOutput"
-                    class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    readonly
-                ></textarea>
-                <button
-                    id="downloadJsonButton"
-                    class="mt-4 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-5 rounded-full
-                           shadow-md transform transition-all duration-200 ease-in-out
-                           hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300"
-                >
-                    Download JSON
+            <div id="jsonOutputContainer" class="hidden mt-8 text-left fade-in">
+                <label for="jsonOutput" class="block text-gray-800 text-sm font-bold mb-3">Generated JSON:</label>
+                <textarea id="jsonOutput" class="w-full p-4 border-2 border-purple-200 rounded-2xl bg-white text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[300px]" readonly></textarea>
+                <button id="downloadJsonButton" class="btn-success mt-6 text-white font-bold py-3 px-6 rounded-2xl shadow-md">
+                    <i class="fas fa-download icon-animate mr-2"></i>Download JSON
                 </button>
             </div>
         </div>
 
         <!-- JSON to CSV Section -->
         <div id="jsonToCsvSection" class="converter-section hidden">
-            <p class="text-gray-600 mb-8">Upload your JSON file to convert it into a downloadable CSV spreadsheet.</p>
-            <input
-                type="file"
-                id="jsonFileInput"
-                accept=".json"
-                class="block w-full text-sm text-gray-500
-                       file:mr-4 file:py-2 file:px-4
-                       file:rounded-full file:border-0
-                       file:text-sm file:font-semibold
-                       file:bg-blue-50 file:text-blue-700
-                       hover:file:bg-blue-100 mb-6 cursor-pointer"
-            />
-            <button
-                id="convertJsonToCsvButton"
-                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full
-                       shadow-lg transform transition-all duration-200 ease-in-out
-                       hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300
-                       disabled:opacity50 disabled:cursor-not-allowed"
-                disabled
-            >
-                Convert to CSV
+            <p class="text-gray-600 mb-8 text-lg">Convert your JSON data into spreadsheet-ready CSV</p>
+            <label class="file-input mb-6 block w-full md:w-auto inline-block">
+                <i class="fas fa-upload mr-2"></i>Choose JSON File
+                <input type="file" id="jsonFileInput" accept=".json" />
+            </label>
+            <button id="convertJsonToCsvButton" class="btn-primary w-full text-white font-bold py-4 px-8 rounded-2xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                <i class="fas fa-sync-alt icon-animate mr-2"></i>Convert to CSV
             </button>
         </div>
 
         <!-- JSON Beautifier Section -->
         <div id="jsonBeautifierSection" class="converter-section hidden">
-            <p class="text-gray-600 mb-8">Paste your JSON string below to lint and beautify it.</p>
-            <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 mb-6">
-                <button
-                    id="beautifyJsonButton"
-                    class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full
-                           shadow-lg transform transition-all duration-200 ease-in-out
-                           hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 flex items-center justify-center space-x-2"
-                >
-                    <i class="fas fa-code"></i> <span>Lint & Beautify</span>
+            <p class="text-gray-600 mb-8 text-lg">Lint and beautify your JSON with perfect formatting</p>
+            <div class="flex flex-col md:flex-row gap-4 mb-6">
+                <button id="beautifyJsonButton" class="btn-primary flex-1 text-white font-bold py-4 px-6 rounded-2xl shadow-lg">
+                    <i class="fas fa-magic icon-animate mr-2"></i>Lint & Beautify
                 </button>
-                <button
-                    id="downloadBeautifiedJsonButton"
-                    class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-full
-                           shadow-md transform transition-all duration-200 ease-in-out
-                           hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300 hidden flex items-center justify-center space-x-2"
-                >
-                    <i class="fas fa-download"></i> <span>Download JSON</span>
+                <button id="downloadBeautifiedJsonButton" class="btn-success flex-1 text-white font-bold py-4 px-6 rounded-2xl shadow-lg hidden">
+                    <i class="fas fa-download icon-animate mr-2"></i>Download
                 </button>
-                <button
-                    id="copyBeautifiedJsonButton"
-                    class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-full
-                           shadow-md transform transition-all duration-200 ease-in-out
-                           hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-300 hidden flex items-center justify-center space-x-2"
-                >
-                    <i class="fas fa-copy"></i> <span>Copy JSON</span>
+                <button id="copyBeautifiedJsonButton" class="btn-secondary flex-1 text-white font-bold py-4 px-6 rounded-2xl shadow-lg hidden">
+                    <i class="fas fa-copy icon-animate mr-2"></i>Copy
                 </button>
             </div>
-            <div class="flex flex-col md:flex-row md:space-x-4 mb-6">
-                <div class="flex-1 w-full md:w-1/2 mb-4 md:mb-0">
-                    <label for="jsonInputToBeautify" class="block text-gray-700 text-sm font-bold mb-2 text-left">Input JSON String:</label>
-                    <textarea
-                        id="jsonInputToBeautify"
-                        class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[300px]"
-                        placeholder='e.g., {"name":"John Doe","age":30,"city":"New York"}'
-                    ></textarea>
+            <div class="flex flex-col md:flex-row gap-6">
+                <div class="flex-1">
+                    <label for="jsonInputToBeautify" class="block text-gray-800 text-sm font-bold mb-3 text-left">Input JSON:</label>
+                    <textarea id="jsonInputToBeautify" class="w-full p-4 border-2 border-purple-200 rounded-2xl bg-white text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[350px]" placeholder='{"name":"John","age":30}'></textarea>
                 </div>
-                <div class="flex-1 w-full md:w-1/2">
-                    <label for="beautifiedJsonOutput" class="block text-gray-700 text-sm font-bold mb-2 text-left">Beautified JSON:</label>
-                    <textarea
-                        id="beautifiedJsonOutput"
-                        class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        readonly
-                        rows="1"
-                    ></textarea>
+                <div class="flex-1">
+                    <label for="beautifiedJsonOutput" class="block text-gray-800 text-sm font-bold mb-3 text-left">Beautified JSON:</label>
+                    <textarea id="beautifiedJsonOutput" class="w-full p-4 border-2 border-purple-200 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800 font-mono text-xs focus:outline-none min-h-[350px]" readonly></textarea>
                 </div>
             </div>
         </div>
 
         <!-- JSON Stringify Section -->
         <div id="jsonStringifySection" class="converter-section hidden">
-            <p class="text-gray-600 mb-8">Convert JSON to an escaped string literal or parse a string literal back to JSON.</p>
-            <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 mb-6">
-                <button
-                    id="jsonToStringButton"
-                    class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full
-                           shadow-lg transform transition-all duration-200 ease-in-out
-                           hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 flex items-center justify-center space-x-2"
-                >
-                    <i class="fas fa-quote-right"></i> <span>JSON to String</span>
+            <p class="text-gray-600 mb-8 text-lg">Convert between JSON and escaped string literals</p>
+            <div class="flex flex-col md:flex-row gap-4 mb-6">
+                <button id="jsonToStringButton" class="btn-primary flex-1 text-white font-bold py-4 px-6 rounded-2xl shadow-lg">
+                    <i class="fas fa-arrow-right icon-animate mr-2"></i>JSON to String
                 </button>
-                <button
-                    id="stringToJsonButton"
-                    class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-full
-                           shadow-lg transform transition-all duration-200 ease-in-out
-                           hover:scale-105 focus:outline-none focus:ring-4 focus:ring-purple-300 flex items-center justify-center space-x-2"
-                >
-                    <i class="fas fa-brackets-curly"></i> <span>String to JSON</span>
+                <button id="stringToJsonButton" class="btn-purple flex-1 font-bold py-4 px-6 rounded-2xl shadow-lg">
+                    <i class="fas fa-arrow-left icon-animate mr-2"></i>String to JSON
                 </button>
-                <button
-                    id="copyStringifyResultButton"
-                    class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-full
-                           shadow-md transform transition-all duration-200 ease-in-out
-                           hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-300 hidden flex items-center justify-center space-x-2"
-                >
-                    <i class="fas fa-copy"></i> <span>Copy Result</span>
+                <button id="copyStringifyResultButton" class="btn-secondary flex-1 text-white font-bold py-4 px-6 rounded-2xl shadow-lg hidden">
+                    <i class="fas fa-copy icon-animate mr-2"></i>Copy
                 </button>
             </div>
-            <div class="flex flex-col md:flex-row md:space-x-4 mb-6">
-                <div class="flex-1 w-full md:w-1/2 mb-4 md:mb-0">
-                    <label for="stringifyInput" class="block text-gray-700 text-sm font-bold mb-2 text-left">Input:</label>
-                    <textarea
-                        id="stringifyInput"
-                        class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[300px]"
-                        placeholder='Paste JSON object or escaped string here...'
-                    ></textarea>
+            <div class="flex flex-col md:flex-row gap-6">
+                <div class="flex-1">
+                    <label for="stringifyInput" class="block text-gray-800 text-sm font-bold mb-3 text-left">Input:</label>
+                    <textarea id="stringifyInput" class="w-full p-4 border-2 border-purple-200 rounded-2xl bg-white text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[350px]" placeholder='Paste JSON or string here...'></textarea>
                 </div>
-                <div class="flex-1 w-full md:w-1/2">
-                    <label for="stringifyOutput" class="block text-gray-700 text-sm font-bold mb-2 text-left">Output:</label>
-                    <textarea
-                        id="stringifyOutput"
-                        class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        readonly
-                        rows="1"
-                    ></textarea>
+                <div class="flex-1">
+                    <label for="stringifyOutput" class="block text-gray-800 text-sm font-bold mb-3 text-left">Output:</label>
+                    <textarea id="stringifyOutput" class="w-full p-4 border-2 border-purple-200 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800 font-mono text-xs focus:outline-none min-h-[350px]" readonly></textarea>
                 </div>
             </div>
         </div>
 
         <!-- Text Delimiter Section -->
         <div id="textDelimiterSection" class="converter-section hidden">
-            <p class="text-gray-600 mb-8">Paste your text and replace one delimiter with another.</p>
-            <div class="flex flex-col md:flex-row md:space-x-4 mb-6">
-                <div class="flex-1 w-full md:w-1/2 mb-4 md:mb-0">
-                    <label for="textInputToReplace" class="block text-gray-700 text-sm font-bold mb-2 text-left">Input Text:</label>
-                    <textarea
-                        id="textInputToReplace"
-                        class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[300px]"
-                        placeholder='e.g., apple|banana|cherry'
-                    ></textarea>
+            <p class="text-gray-600 mb-8 text-lg">Replace delimiters in your text instantly</p>
+            <div class="flex flex-col md:flex-row gap-6 mb-6">
+                <div class="flex-1">
+                    <label for="textInputToReplace" class="block text-gray-800 text-sm font-bold mb-3 text-left">Input Text:</label>
+                    <textarea id="textInputToReplace" class="w-full p-4 border-2 border-purple-200 rounded-2xl bg-white text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[350px]" placeholder='apple|banana|cherry'></textarea>
                 </div>
-                <div class="flex-1 w-full md:w-1/2">
-                    <label for="replacedTextOutput" class="block text-gray-700 text-sm font-bold mb-2 text-left">Replaced Text:</label>
-                    <textarea
-                        id="replacedTextOutput"
-                        class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        readonly
-                        rows="1"
-                    ></textarea>
+                <div class="flex-1">
+                    <label for="replacedTextOutput" class="block text-gray-800 text-sm font-bold mb-3 text-left">Output Text:</label>
+                    <textarea id="replacedTextOutput" class="w-full p-4 border-2 border-purple-200 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800 font-mono text-xs focus:outline-none min-h-[350px]" readonly></textarea>
                 </div>
             </div>
-            <div class="flex flex-col md:flex-row md:space-x-4 items-end mb-6">
-                <div class="w-full md:w-1/3 mb-4 md:mb-0 text-left">
-                    <label for="oldDelimiterInput" class="block text-gray-700 text-sm font-bold mb-2">Old Delimiter:</label>
-                    <input type="text" id="oldDelimiterInput" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., |" />
+            <div class="flex flex-col md:flex-row gap-4 items-end mb-6">
+                <div class="flex-1 text-left">
+                    <label for="oldDelimiterInput" class="block text-gray-800 text-sm font-bold mb-3">Old Delimiter:</label>
+                    <input type="text" id="oldDelimiterInput" class="w-full p-4 border-2 border-purple-200 rounded-xl bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="|" />
                 </div>
-                <div class="w-full md:w-1/3 mb-4 md:mb-0 text-left">
-                    <label for="newDelimiterInput" class="block text-gray-700 text-sm font-bold mb-2">New Delimiter:</label>
-                    <input type="text" id="newDelimiterInput" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., ," />
+                <div class="flex-1 text-left">
+                    <label for="newDelimiterInput" class="block text-gray-800 text-sm font-bold mb-3">New Delimiter:</label>
+                    <input type="text" id="newDelimiterInput" class="w-full p-4 border-2 border-purple-200 rounded-xl bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="," />
                 </div>
-                <button id="replaceDelimiterButton" class="w-full md:w-1/3 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transform transition-all duration-200 ease-in-out hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 flex items-center justify-center space-x-2">
-                    <i class="fas fa-exchange-alt"></i> <span>Replace Delimiter</span>
+                <button id="replaceDelimiterButton" class="btn-primary flex-1 text-white font-bold py-4 px-6 rounded-2xl shadow-lg">
+                    <i class="fas fa-sync icon-animate mr-2"></i>Replace
                 </button>
             </div>
-            <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 mb-6 justify-end">
-                <button id="downloadReplacedTextButton" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-full shadow-md transform transition-all duration-200 ease-in-out hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300 hidden flex items-center justify-center space-x-2">
-                    <i class="fas fa-download"></i> <span>Download Text</span>
+            <div class="flex gap-4">
+                <button id="downloadReplacedTextButton" class="btn-success flex-1 text-white font-bold py-3 px-6 rounded-2xl shadow-lg hidden">
+                    <i class="fas fa-download icon-animate mr-2"></i>Download
                 </button>
-                <button id="copyReplacedTextButton" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-full shadow-md transform transition-all duration-200 ease-in-out hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-300 hidden flex items-center justify-center space-x-2">
-                    <i class="fas fa-copy"></i> <span>Copy Text</span>
+                <button id="copyReplacedTextButton" class="btn-secondary flex-1 text-white font-bold py-3 px-6 rounded-2xl shadow-lg hidden">
+                    <i class="fas fa-copy icon-animate mr-2"></i>Copy
                 </button>
             </div>
         </div>
         
         <!-- QR Code Generator Section -->
         <div id="qrCodeGeneratorSection" class="converter-section hidden">
-            <p class="text-gray-600 mb-8">Enter any text or link to instantly generate a QR code image.</p>
-            <div class="flex flex-col md:flex-row md:space-x-4 mb-6 items-start">
-                <div class="flex-1 w-full md:w-1/2 mb-4 md:mb-0">
-                    <label for="qrCodeInput" class="block text-gray-700 text-sm font-bold mb-2 text-left">Text or Link:</label>
-                    <textarea id="qrCodeInput" class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[200px]" placeholder='e.g., https://www.google.com'></textarea>
-                    <button id="generateQrCodeButton" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transform transition-all duration-200 ease-in-out hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 flex items-center justify-center space-x-2 mt-4">
-                        <i class="fas fa-qrcode"></i> <span>Generate QR Code</span>
+            <p class="text-gray-600 mb-8 text-lg">Generate beautiful QR codes for any text or URL</p>
+            <div class="flex flex-col md:flex-row gap-6 items-start">
+                <div class="flex-1">
+                    <label for="qrCodeInput" class="block text-gray-800 text-sm font-bold mb-3 text-left">Text or URL:</label>
+                    <textarea id="qrCodeInput" class="w-full p-4 border-2 border-purple-200 rounded-2xl bg-white text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[250px]" placeholder='https://www.example.com'></textarea>
+                    <button id="generateQrCodeButton" class="btn-primary w-full mt-6 text-white font-bold py-4 px-6 rounded-2xl shadow-lg">
+                        <i class="fas fa-qrcode icon-animate mr-2"></i>Generate QR Code
                     </button>
                 </div>
-                <div class="flex-1 w-full md:w-1/2">
-                    <label class="block text-gray-700 text-sm font-bold mb-2 text-left">Generated QR Code:</label>
-                    <div id="qrCodeOutputContainer" class="p-4 bg-gray-50 border border-gray-300 rounded-lg flex flex-col items-center justify-center min-h-[200px] space-y-4">
-                        <canvas id="qrCodeCanvas" class="hidden"></canvas>
-                        <p id="qrCodePlaceholder" class="text-gray-500 text-sm">QR Code will appear here.</p>
-                        <button id="downloadQrCodeButton" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full shadow-md transform transition-all duration-200 ease-in-out hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300 hidden flex items-center justify-center space-x-2">
-                            <i class="fas fa-download"></i> <span>Download QR Code</span>
+                <div class="flex-1">
+                    <label class="block text-gray-800 text-sm font-bold mb-3 text-left">QR Code Preview:</label>
+                    <div id="qrCodeOutputContainer" class="qr-container p-8 rounded-2xl flex flex-col items-center justify-center min-h-[250px] space-y-4 border-2 border-purple-200">
+                        <canvas id="qrCodeCanvas" class="hidden rounded-xl shadow-xl"></canvas>
+                        <p id="qrCodePlaceholder" class="text-gray-500">Your QR code will appear here</p>
+                        <button id="downloadQrCodeButton" class="btn-success text-white font-bold py-3 px-6 rounded-2xl shadow-lg hidden mt-4">
+                            <i class="fas fa-download icon-animate mr-2"></i>Download QR Code
                         </button>
                     </div>
                 </div>
@@ -331,27 +411,23 @@
 
         <!-- Markdown Viewer Section -->
         <div id="markdownViewerSection" class="converter-section hidden">
-            <p class="text-gray-600 mb-8">Write Markdown on the left and see the rendered HTML on the right.</p>
-            <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 mb-6">
-                <button id="copyMarkdownHtmlButton" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-full shadow-md transform transition-all duration-200 ease-in-out hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-300 flex items-center justify-center space-x-2">
-                    <i class="fas fa-copy"></i> <span>Copy Rendered HTML</span>
+            <p class="text-gray-600 mb-8 text-lg">Write Markdown and see live HTML preview</p>
+            <div class="flex gap-4 mb-6">
+                <button id="copyMarkdownHtmlButton" class="btn-secondary flex-1 text-white font-bold py-4 px-6 rounded-2xl shadow-lg">
+                    <i class="fas fa-copy icon-animate mr-2"></i>Copy HTML
                 </button>
-                <button id="downloadMarkdownHtmlButton" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-full shadow-md transform transition-all duration-200 ease-in-out hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300 flex items-center justify-center space-x-2">
-                    <i class="fas fa-download"></i> <span>Download HTML</span>
+                <button id="downloadMarkdownHtmlButton" class="btn-success flex-1 text-white font-bold py-4 px-6 rounded-2xl shadow-lg">
+                    <i class="fas fa-download icon-animate mr-2"></i>Download HTML
                 </button>
             </div>
-            <div class="flex flex-col md:flex-row md:space-x-4 mb-6">
-                <div class="flex-1 w-full md:w-1/2 mb-4 md:mb-0">
-                    <label for="markdownInput" class="block text-gray-700 text-sm font-bold mb-2 text-left">Markdown Editor:</label>
-                    <textarea
-                        id="markdownInput"
-                        class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[400px]"
-                        placeholder="# Hello Markdown&#10;&#10;Write your content here..."
-                    ></textarea>
+            <div class="flex flex-col md:flex-row gap-6">
+                <div class="flex-1">
+                    <label for="markdownInput" class="block text-gray-800 text-sm font-bold mb-3 text-left">Markdown Editor:</label>
+                    <textarea id="markdownInput" class="w-full p-4 border-2 border-purple-200 rounded-2xl bg-white text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[450px]" placeholder="# Hello Markdown&#10;&#10;Write your content here..."></textarea>
                 </div>
-                <div class="flex-1 w-full md:w-1/2">
-                    <label class="block text-gray-700 text-sm font-bold mb-2 text-left">Live Preview:</label>
-                    <div id="markdownPreview"></div>
+                <div class="flex-1">
+                    <label class="block text-gray-800 text-sm font-bold mb-3 text-left">Live Preview:</label>
+                    <div id="markdownPreview" class="text-left p-6 border-2 border-purple-200 rounded-2xl min-h-[450px] overflow-y-auto"></div>
                 </div>
             </div>
         </div>
@@ -461,20 +537,20 @@
             
             document.getElementById('jsonInputToBeautify').value = '';
             document.getElementById('beautifiedJsonOutput').value = '';
-            document.getElementById('beautifiedJsonOutput').style.height = '150px';
+            document.getElementById('beautifiedJsonOutput').style.height = '350px';
             downloadBeautifiedJsonButton.classList.add('hidden');
             copyBeautifiedJsonButton.classList.add('hidden');
 
             stringifyInput.value = '';
             stringifyOutput.value = '';
-            stringifyOutput.style.height = '150px';
+            stringifyOutput.style.height = '350px';
             copyStringifyResultButton.classList.add('hidden');
             
             document.getElementById('textInputToReplace').value = '';
             document.getElementById('oldDelimiterInput').value = '';
             document.getElementById('newDelimiterInput').value = '';
             document.getElementById('replacedTextOutput').value = '';
-            document.getElementById('replacedTextOutput').style.height = '150px';
+            document.getElementById('replacedTextOutput').style.height = '350px';
             downloadReplacedTextButton.classList.add('hidden');
             copyReplacedTextButton.classList.add('hidden');
             
@@ -502,7 +578,7 @@
                     const res = convertCsvToJson(e.target.result);
                     document.getElementById('jsonOutput').value = JSON.stringify(res, null, 2);
                     document.getElementById('jsonOutputContainer').classList.remove('hidden');
-                    showMessage('Converted!', 'success');
+                    showMessage('Converted successfully!', 'success');
                 } catch (err) { showMessage(err.message, 'error'); }
             };
             reader.readAsText(file);
@@ -556,7 +632,7 @@
                     const csv = convertJsonToCsv(data);
                     downloadText(csv, 'data.csv', 'text/csv');
                     showMessage('CSV Downloading...', 'success');
-                } catch (err) { showMessage('Invalid JSON', 'error'); }
+                } catch (err) { showMessage('Invalid JSON file', 'error'); }
             };
             reader.readAsText(file);
         });
@@ -580,28 +656,27 @@
         document.getElementById('beautifyJsonButton').addEventListener('click', () => {
             const val = document.getElementById('jsonInputToBeautify').value.trim();
             hideMessageBox();
-            if (!val) { showMessage('Paste JSON first', 'info'); return; }
+            if (!val) { showMessage('Please paste JSON first', 'info'); return; }
             try {
                 const parsed = JSON.parse(val);
                 document.getElementById('beautifiedJsonOutput').value = JSON.stringify(parsed, null, 2);
                 adjustTextareaHeight(document.getElementById('beautifiedJsonOutput'));
                 downloadBeautifiedJsonButton.classList.remove('hidden');
                 copyBeautifiedJsonButton.classList.remove('hidden');
-                showMessage('JSON Beautified', 'success');
+                showMessage('JSON Beautified successfully!', 'success');
             } catch (err) { showMessage(err.message, 'error'); }
         });
 
         downloadBeautifiedJsonButton.addEventListener('click', () => downloadText(document.getElementById('beautifiedJsonOutput').value, 'pretty.json', 'application/json'));
-        copyBeautifiedJsonButton.addEventListener('click', () => copyToClipboard(document.getElementById('beautifiedJsonOutput').value, 'JSON Copied!'));
+        copyBeautifiedJsonButton.addEventListener('click', () => copyToClipboard(document.getElementById('beautifiedJsonOutput').value, 'JSON Copied to clipboard!'));
 
         // --- JSON Stringify (JSON <-> String) ---
         jsonToStringButton.addEventListener('click', () => {
             const val = stringifyInput.value.trim();
             hideMessageBox();
-            if (!val) return showMessage('Paste JSON first', 'info');
+            if (!val) return showMessage('Please paste JSON first', 'info');
             try {
                 const parsed = JSON.parse(val);
-                // First stringify to compact, then stringify the string to get escapes
                 stringifyOutput.value = JSON.stringify(JSON.stringify(parsed));
                 adjustTextareaHeight(stringifyOutput);
                 copyStringifyResultButton.classList.remove('hidden');
@@ -612,11 +687,9 @@
         stringToJsonButton.addEventListener('click', () => {
             const val = stringifyInput.value.trim();
             hideMessageBox();
-            if (!val) return showMessage('Paste escaped string first', 'info');
+            if (!val) return showMessage('Please paste escaped string first', 'info');
             try {
-                // If it starts and ends with quotes, parse it twice
                 let result = val;
-                // Attempt to parse the string literal first
                 if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
                    result = JSON.parse(val);
                 }
@@ -629,7 +702,7 @@
         });
 
         copyStringifyResultButton.addEventListener('click', () => {
-            copyToClipboard(stringifyOutput.value, 'Result Copied!');
+            copyToClipboard(stringifyOutput.value, 'Result Copied to clipboard!');
         });
 
         // --- Text Delimiter ---
@@ -638,30 +711,30 @@
             const oldD = document.getElementById('oldDelimiterInput').value;
             const newD = document.getElementById('newDelimiterInput').value;
             hideMessageBox();
-            if (!input) return showMessage('Paste text', 'info');
-            if (!oldD) return showMessage('Enter old delimiter', 'error');
+            if (!input) return showMessage('Please paste text', 'info');
+            if (!oldD) return showMessage('Please enter old delimiter', 'error');
             const result = input.replaceAll(oldD, newD);
             document.getElementById('replacedTextOutput').value = result;
             adjustTextareaHeight(document.getElementById('replacedTextOutput'));
             downloadReplacedTextButton.classList.remove('hidden');
             copyReplacedTextButton.classList.remove('hidden');
-            showMessage('Replaced!', 'success');
+            showMessage('Delimiter replaced successfully!', 'success');
         });
 
         downloadReplacedTextButton.addEventListener('click', () => downloadText(document.getElementById('replacedTextOutput').value, 'replaced.txt'));
-        copyReplacedTextButton.addEventListener('click', () => copyToClipboard(document.getElementById('replacedTextOutput').value, 'Text Copied!'));
+        copyReplacedTextButton.addEventListener('click', () => copyToClipboard(document.getElementById('replacedTextOutput').value, 'Text Copied to clipboard!'));
 
         // --- QR Code ---
         let qr = new QRious({ element: qrCodeCanvas, size: 256 });
         document.getElementById('generateQrCodeButton').addEventListener('click', () => {
             const val = document.getElementById('qrCodeInput').value.trim();
             hideMessageBox();
-            if (!val) return showMessage('Enter text/link', 'error');
-            qr.set({ value: val, foreground: '#1F2937' });
+            if (!val) return showMessage('Please enter text or link', 'error');
+            qr.set({ value: val, foreground: '#667eea' });
             qrCodeCanvas.classList.remove('hidden');
             qrCodePlaceholder.classList.add('hidden');
             downloadQrCodeButton.classList.remove('hidden');
-            showMessage('QR Generated', 'success');
+            showMessage('QR Code Generated successfully!', 'success');
         });
 
         downloadQrCodeButton.addEventListener('click', () => {
@@ -677,12 +750,12 @@
         });
 
         document.getElementById('copyMarkdownHtmlButton').addEventListener('click', () => {
-            if (!markdownPreview.innerHTML) return showMessage('Write markdown first', 'info');
-            copyToClipboard(markdownPreview.innerHTML, 'HTML Copied!');
+            if (!markdownPreview.innerHTML) return showMessage('Please write markdown first', 'info');
+            copyToClipboard(markdownPreview.innerHTML, 'HTML Copied to clipboard!');
         });
 
         document.getElementById('downloadMarkdownHtmlButton').addEventListener('click', () => {
-            if (!markdownPreview.innerHTML) return showMessage('Write markdown first', 'info');
+            if (!markdownPreview.innerHTML) return showMessage('Please write markdown first', 'info');
             const fullHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Rendered Markdown</title><style>body{font-family:sans-serif;padding:2em;}</style></head><body>${markdownPreview.innerHTML}</body></html>`;
             downloadText(fullHtml, 'rendered.html', 'text/html');
         });
