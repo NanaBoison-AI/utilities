@@ -4,179 +4,430 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NanaBoison Utilities</title>
-    <!-- Tailwind CSS CDN for styling -->
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/gwDSdNBh/icon.png">
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome CDN for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
     <style>
-        /* Custom font for a clean look */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
         body {
-            font-family: "Inter", sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
         }
-        /* Custom styles for the textarea to ensure it's readable */
-        textarea {
-            resize: vertical; /* Allow vertical resizing for user */
-            min-height: 150px; /* Minimum height for all textareas, except where specifically overridden */
-            overflow: auto; /* Default to auto scroll if content exceeds size */
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(252, 161, 125, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(139, 92, 246, 0.3) 0%, transparent 50%);
+            animation: gradientShift 15s ease infinite;
+            pointer-events: none;
         }
+        
+        @keyframes gradientShift {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        }
+        
+        .tab-button {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .tab-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .tab-button:hover::before {
+            left: 100%;
+        }
+        
         .tab-button.active {
-            background-color: #3B82F6; /* blue-600 */
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn-primary:hover::after {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px -5px rgba(102, 126, 234, 0.5);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        
+        .btn-success:hover {
+            box-shadow: 0 15px 35px -5px rgba(17, 153, 142, 0.5);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #434343 0%, #000000 100%);
+        }
+        
+        .btn-secondary:hover {
+            box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.5);
+        }
+        
+        .btn-purple {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #4a5568;
+        }
+        
+        .btn-purple:hover {
+            box-shadow: 0 15px 35px -5px rgba(168, 237, 234, 0.5);
+        }
+        
+        textarea, input[type="text"] {
+            transition: all 0.3s ease;
+        }
+        
+        textarea:focus, input[type="text"]:focus {
+            transform: scale(1.01);
+            box-shadow: 0 10px 30px -5px rgba(102, 126, 234, 0.2);
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .file-input {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            cursor: pointer;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 1rem 2rem;
+            border-radius: 9999px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .file-input:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px -5px rgba(245, 87, 108, 0.5);
+        }
+        
+        .file-input input[type=file] {
+            position: absolute;
+            top: 0;
+            right: 0;
+            margin: 0;
+            padding: 0;
+            font-size: 20px;
+            cursor: pointer;
+            opacity: 0;
+            filter: alpha(opacity=0);
+        }
+        
+        #markdownPreview {
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+        }
+        
+        #markdownPreview h1 { 
+            font-size: 2em; 
+            font-weight: 800; 
+            margin-bottom: 0.5em; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        #markdownPreview h2 { 
+            font-size: 1.5em; 
+            font-weight: 700; 
+            margin-bottom: 0.5em; 
+            color: #667eea;
+            border-bottom: 1px solid #e5e7eb; 
+        }
+        
+        .message-box {
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .icon-animate {
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+        
+        button:hover .icon-animate {
+            transform: scale(1.2) rotate(5deg);
+        }
+        
+        .qr-container {
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-blue-100 to-purple-200 min-h-screen flex items-center justify-center p-4">
-    <div class="bg-white p-8 rounded-xl shadow-2xl w-full md:w-4/5 lg:w-3/4 text-center border border-gray-200">
-        <h1 class="text-3xl font-extrabold text-gray-800 mb-6">NanaBoison Utilities</h1>
+<body class="flex items-center justify-center p-4 min-h-screen">
+    <div class="glass-card p-8 rounded-3xl w-full max-w-6xl text-center fade-in" style="animation-delay: 0.1s;">
+        
+        <!-- Header -->
+        <div class="mb-10">
+            <h1 class="text-5xl font-extrabold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600">
+                NanaBoison Utilities
+            </h1>
+            <p class="text-gray-600 text-sm">Powerful tools for developers and creators</p>
+        </div>
 
         <!-- Navigation Tabs -->
-        <div class="flex justify-center mb-8 bg-gray-100 rounded-full p-1 shadow-inner">
-            <button id="tabCsvToJson" class="tab-button active py-2 px-6 rounded-full text-gray-700 font-semibold transition-all duration-200 hover:bg-blue-500 hover:text-white">
-                CSV to JSON
+        <div class="flex justify-center mb-8 bg-white bg-opacity-50 rounded-2xl p-2 shadow-inner flex-wrap gap-2">
+            <button id="tabCsvToJson" class="tab-button active py-3 px-6 rounded-xl font-semibold text-sm">
+                <i class="fas fa-file-csv icon-animate mr-2"></i>CSV to JSON
             </button>
-            <button id="tabJsonToCsv" class="tab-button py-2 px-6 rounded-full text-gray-700 font-semibold transition-all duration-200 hover:bg-blue-500 hover:text-white ml-2">
-                JSON to CSV
+            <button id="tabJsonToCsv" class="tab-button py-3 px-6 rounded-xl font-semibold text-sm">
+                <i class="fas fa-table icon-animate mr-2"></i>JSON to CSV
             </button>
-            <button id="tabJsonBeautifier" class="tab-button py-2 px-6 rounded-full text-gray-700 font-semibold transition-all duration-200 hover:bg-blue-500 hover:text-white ml-2">
-                JSON Lint
+            <button id="tabJsonBeautifier" class="tab-button py-3 px-6 rounded-xl font-semibold text-sm">
+                <i class="fas fa-code icon-animate mr-2"></i>JSON Lint
+            </button>
+            <button id="tabJsonStringify" class="tab-button py-3 px-6 rounded-xl font-semibold text-sm">
+                <i class="fas fa-quote-right icon-animate mr-2"></i>Stringify
+            </button>
+            <button id="tabTextDelimiter" class="tab-button py-3 px-6 rounded-xl font-semibold text-sm">
+                <i class="fas fa-exchange-alt icon-animate mr-2"></i>Delimiter
+            </button>
+            <button id="tabQrCodeGenerator" class="tab-button py-3 px-6 rounded-xl font-semibold text-sm">
+                <i class="fas fa-qrcode icon-animate mr-2"></i>QR Code
+            </button>
+            <button id="tabMarkdownViewer" class="tab-button py-3 px-6 rounded-xl font-semibold text-sm">
+                <i class="fab fa-markdown icon-animate mr-2"></i>Markdown
             </button>
         </div>
 
-        <!-- Message display area (global for all apps) -->
-        <div id="messageBox" class="mb-4 p-3 text-sm rounded-lg hidden text-left" role="alert"></div>
+        <!-- Message Box -->
+        <div id="messageBox" class="message-box mb-6 p-4 text-sm rounded-xl hidden text-left shadow-lg" role="alert"></div>
 
         <!-- CSV to JSON Section -->
-        <div id="csvToJsonSection" class="converter-section">
-            <p class="text-gray-600 mb-8">Upload your CSV file to convert it into a structured JSON format.</p>
-            <!-- File input for CSV file -->
-            <input
-                type="file"
-                id="csvFileInput"
-                accept=".csv"
-                class="block w-full text-sm text-gray-500
-                       file:mr-4 file:py-2 file:px-4
-                       file:rounded-full file:border-0
-                       file:text-sm file:font-semibold
-                       file:bg-blue-50 file:text-blue-700
-                       hover:file:bg-blue-100 mb-6 cursor-pointer"
-            />
-
-            <!-- Button to trigger CSV to JSON conversion -->
-            <button
-                id="convertCsvToJsonButton"
-                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full
-                       shadow-lg transform transition-all duration-200 ease-in-out
-                       hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300
-                       disabled:opacity-50 disabled:cursor-not-allowed mb-6"
-                disabled
-            >
-                Convert to JSON
+        <div id="csvToJsonSection" class="converter-section fade-in">
+            <p class="text-gray-600 mb-8 text-lg">Transform your CSV files into structured JSON format</p>
+            <label class="file-input mb-6 block w-full md:w-auto inline-block">
+                <i class="fas fa-upload mr-2"></i>Choose CSV File
+                <input type="file" id="csvFileInput" accept=".csv" />
+            </label>
+            <button id="convertCsvToJsonButton" class="btn-primary w-full text-white font-bold py-4 px-8 rounded-2xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed mb-6" disabled>
+                <i class="fas fa-sync-alt icon-animate mr-2"></i>Convert to JSON
             </button>
 
-            <!-- JSON Output Area -->
-            <div id="jsonOutputContainer" class="hidden mt-6 text-left">
-                <label for="jsonOutput" class="block text-gray-700 text-sm font-bold mb-2">Generated JSON:</label>
-                <textarea
-                    id="jsonOutput"
-                    class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    readonly
-                ></textarea>
-                <button
-                    id="downloadJsonButton"
-                    class="mt-4 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-5 rounded-full
-                           shadow-md transform transition-all duration-200 ease-in-out
-                           hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300"
-                >
-                    Download JSON
+            <div id="jsonOutputContainer" class="hidden mt-8 text-left fade-in">
+                <label for="jsonOutput" class="block text-gray-800 text-sm font-bold mb-3">Generated JSON:</label>
+                <textarea id="jsonOutput" class="w-full p-4 border-2 border-purple-200 rounded-2xl bg-white text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[300px]" readonly></textarea>
+                <button id="downloadJsonButton" class="btn-success mt-6 text-white font-bold py-3 px-6 rounded-2xl shadow-md">
+                    <i class="fas fa-download icon-animate mr-2"></i>Download JSON
                 </button>
             </div>
         </div>
 
         <!-- JSON to CSV Section -->
         <div id="jsonToCsvSection" class="converter-section hidden">
-            <p class="text-gray-600 mb-8">Upload your JSON file to convert it into a downloadable CSV spreadsheet.</p>
-            <!-- File input for JSON file -->
-            <input
-                type="file"
-                id="jsonFileInput"
-                accept=".json"
-                class="block w-full text-sm text-gray-500
-                       file:mr-4 file:py-2 file:px-4
-                       file:rounded-full file:border-0
-                       file:text-sm file:font-semibold
-                       file:bg-blue-50 file:text-blue-700
-                       hover:file:bg-blue-100 mb-6 cursor-pointer"
-            />
-
-            <!-- Button to trigger JSON to CSV conversion -->
-            <button
-                id="convertJsonToCsvButton"
-                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full
-                       shadow-lg transform transition-all duration-200 ease-in-out
-                       hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300
-                       disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled
-            >
-                Convert to CSV
+            <p class="text-gray-600 mb-8 text-lg">Convert your JSON data into spreadsheet-ready CSV</p>
+            <label class="file-input mb-6 block w-full md:w-auto inline-block">
+                <i class="fas fa-upload mr-2"></i>Choose JSON File
+                <input type="file" id="jsonFileInput" accept=".json" />
+            </label>
+            <button id="convertJsonToCsvButton" class="btn-primary w-full text-white font-bold py-4 px-8 rounded-2xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                <i class="fas fa-sync-alt icon-animate mr-2"></i>Convert to CSV
             </button>
         </div>
 
         <!-- JSON Beautifier Section -->
         <div id="jsonBeautifierSection" class="converter-section hidden">
-            <p class="text-gray-600 mb-8">Paste your JSON string below to lint and beautify it.</p>
-
-            <!-- Buttons at the top, side-by-side -->
-            <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 mb-6">
-                <button
-                    id="beautifyJsonButton"
-                    class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full
-                           shadow-lg transform transition-all duration-200 ease-in-out
-                           hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 flex items-center justify-center space-x-2"
-                >
-                    <i class="fas fa-code"></i> <span>Lint & Beautify</span>
+            <p class="text-gray-600 mb-8 text-lg">Lint and beautify your JSON with perfect formatting</p>
+            <div class="flex flex-col md:flex-row gap-4 mb-6">
+                <button id="beautifyJsonButton" class="btn-primary flex-1 text-white font-bold py-4 px-6 rounded-2xl shadow-lg">
+                    <i class="fas fa-magic icon-animate mr-2"></i>Lint & Beautify
                 </button>
-
-                <button
-                    id="downloadBeautifiedJsonButton"
-                    class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-full
-                           shadow-md transform transition-all duration-200 ease-in-out
-                           hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300 hidden flex items-center justify-center space-x-2"
-                >
-                    <i class="fas fa-download"></i> <span>Download JSON</span>
+                <button id="downloadBeautifiedJsonButton" class="btn-success flex-1 text-white font-bold py-4 px-6 rounded-2xl shadow-lg hidden">
+                    <i class="fas fa-download icon-animate mr-2"></i>Download
                 </button>
-
-                <button
-                    id="copyBeautifiedJsonButton"
-                    class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-full
-                           shadow-md transform transition-all duration-200 ease-in-out
-                           hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-300 hidden flex items-center justify-center space-x-2"
-                >
-                    <i class="fas fa-copy"></i> <span>Copy JSON</span>
+                <button id="copyBeautifiedJsonButton" class="btn-secondary flex-1 text-white font-bold py-4 px-6 rounded-2xl shadow-lg hidden">
+                    <i class="fas fa-copy icon-animate mr-2"></i>Copy
                 </button>
             </div>
-
-            <!-- Container for side-by-side text areas -->
-            <div class="flex flex-col md:flex-row md:space-x-4 mb-6">
-                <!-- Input JSON String Column -->
-                <div class="flex-1 w-full md:w-1/2 mb-4 md:mb-0">
-                    <label for="jsonInputToBeautify" class="block text-gray-700 text-sm font-bold mb-2 text-left">Input JSON String:</label>
-                    <textarea
-                        id="jsonInputToBeautify"
-                        class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[300px]"
-                        placeholder='e.g., {"name":"John Doe","age":30,"city":"New York"}'
-                    ></textarea>
+            <div class="flex flex-col md:flex-row gap-6">
+                <div class="flex-1">
+                    <label for="jsonInputToBeautify" class="block text-gray-800 text-sm font-bold mb-3 text-left">Input JSON:</label>
+                    <textarea id="jsonInputToBeautify" class="w-full p-4 border-2 border-purple-200 rounded-2xl bg-white text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[350px]" placeholder='{"name":"John","age":30}'></textarea>
                 </div>
+                <div class="flex-1">
+                    <label for="beautifiedJsonOutput" class="block text-gray-800 text-sm font-bold mb-3 text-left">Beautified JSON:</label>
+                    <textarea id="beautifiedJsonOutput" class="w-full p-4 border-2 border-purple-200 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800 font-mono text-xs focus:outline-none min-h-[350px]" readonly></textarea>
+                </div>
+            </div>
+        </div>
 
-                <!-- Beautified JSON Output Column -->
-                <div class="flex-1 w-full md:w-1/2">
-                    <label for="beautifiedJsonOutput" class="block text-gray-700 text-sm font-bold mb-2 text-left">Beautified JSON:</label>
-                    <textarea
-                        id="beautifiedJsonOutput"
-                        class="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        readonly
-                        rows="1" /* Start with 1 row, JS will expand */
-                    ></textarea>
+        <!-- JSON Stringify Section -->
+        <div id="jsonStringifySection" class="converter-section hidden">
+            <p class="text-gray-600 mb-8 text-lg">Convert between JSON and escaped string literals</p>
+            <div class="flex flex-col md:flex-row gap-4 mb-6">
+                <button id="jsonToStringButton" class="btn-primary flex-1 text-white font-bold py-4 px-6 rounded-2xl shadow-lg">
+                    <i class="fas fa-arrow-right icon-animate mr-2"></i>JSON to String
+                </button>
+                <button id="stringToJsonButton" class="btn-purple flex-1 font-bold py-4 px-6 rounded-2xl shadow-lg">
+                    <i class="fas fa-arrow-left icon-animate mr-2"></i>String to JSON
+                </button>
+                <button id="copyStringifyResultButton" class="btn-secondary flex-1 text-white font-bold py-4 px-6 rounded-2xl shadow-lg hidden">
+                    <i class="fas fa-copy icon-animate mr-2"></i>Copy
+                </button>
+            </div>
+            <div class="flex flex-col md:flex-row gap-6">
+                <div class="flex-1">
+                    <label for="stringifyInput" class="block text-gray-800 text-sm font-bold mb-3 text-left">Input:</label>
+                    <textarea id="stringifyInput" class="w-full p-4 border-2 border-purple-200 rounded-2xl bg-white text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[350px]" placeholder='Paste JSON or string here...'></textarea>
+                </div>
+                <div class="flex-1">
+                    <label for="stringifyOutput" class="block text-gray-800 text-sm font-bold mb-3 text-left">Output:</label>
+                    <textarea id="stringifyOutput" class="w-full p-4 border-2 border-purple-200 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800 font-mono text-xs focus:outline-none min-h-[350px]" readonly></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Text Delimiter Section -->
+        <div id="textDelimiterSection" class="converter-section hidden">
+            <p class="text-gray-600 mb-8 text-lg">Replace delimiters in your text instantly</p>
+            <div class="flex flex-col md:flex-row gap-6 mb-6">
+                <div class="flex-1">
+                    <label for="textInputToReplace" class="block text-gray-800 text-sm font-bold mb-3 text-left">Input Text:</label>
+                    <textarea id="textInputToReplace" class="w-full p-4 border-2 border-purple-200 rounded-2xl bg-white text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[350px]" placeholder='apple|banana|cherry'></textarea>
+                </div>
+                <div class="flex-1">
+                    <label for="replacedTextOutput" class="block text-gray-800 text-sm font-bold mb-3 text-left">Output Text:</label>
+                    <textarea id="replacedTextOutput" class="w-full p-4 border-2 border-purple-200 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800 font-mono text-xs focus:outline-none min-h-[350px]" readonly></textarea>
+                </div>
+            </div>
+            <div class="flex flex-col md:flex-row gap-4 items-end mb-6">
+                <div class="flex-1 text-left">
+                    <label for="oldDelimiterInput" class="block text-gray-800 text-sm font-bold mb-3">Old Delimiter:</label>
+                    <input type="text" id="oldDelimiterInput" class="w-full p-4 border-2 border-purple-200 rounded-xl bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="|" />
+                </div>
+                <div class="flex-1 text-left">
+                    <label for="newDelimiterInput" class="block text-gray-800 text-sm font-bold mb-3">New Delimiter:</label>
+                    <input type="text" id="newDelimiterInput" class="w-full p-4 border-2 border-purple-200 rounded-xl bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="," />
+                </div>
+                <button id="replaceDelimiterButton" class="btn-primary flex-1 text-white font-bold py-4 px-6 rounded-2xl shadow-lg">
+                    <i class="fas fa-sync icon-animate mr-2"></i>Replace
+                </button>
+            </div>
+            <div class="flex gap-4">
+                <button id="downloadReplacedTextButton" class="btn-success flex-1 text-white font-bold py-3 px-6 rounded-2xl shadow-lg hidden">
+                    <i class="fas fa-download icon-animate mr-2"></i>Download
+                </button>
+                <button id="copyReplacedTextButton" class="btn-secondary flex-1 text-white font-bold py-3 px-6 rounded-2xl shadow-lg hidden">
+                    <i class="fas fa-copy icon-animate mr-2"></i>Copy
+                </button>
+            </div>
+        </div>
+        
+        <!-- QR Code Generator Section -->
+        <div id="qrCodeGeneratorSection" class="converter-section hidden">
+            <p class="text-gray-600 mb-8 text-lg">Generate beautiful QR codes for any text or URL</p>
+            <div class="flex flex-col md:flex-row gap-6 items-start">
+                <div class="flex-1">
+                    <label for="qrCodeInput" class="block text-gray-800 text-sm font-bold mb-3 text-left">Text or URL:</label>
+                    <textarea id="qrCodeInput" class="w-full p-4 border-2 border-purple-200 rounded-2xl bg-white text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[250px]" placeholder='https://www.example.com'></textarea>
+                    <button id="generateQrCodeButton" class="btn-primary w-full mt-6 text-white font-bold py-4 px-6 rounded-2xl shadow-lg">
+                        <i class="fas fa-qrcode icon-animate mr-2"></i>Generate QR Code
+                    </button>
+                </div>
+                <div class="flex-1">
+                    <label class="block text-gray-800 text-sm font-bold mb-3 text-left">QR Code Preview:</label>
+                    <div id="qrCodeOutputContainer" class="qr-container p-8 rounded-2xl flex flex-col items-center justify-center min-h-[250px] space-y-4 border-2 border-purple-200">
+                        <canvas id="qrCodeCanvas" class="hidden rounded-xl shadow-xl"></canvas>
+                        <p id="qrCodePlaceholder" class="text-gray-500">Your QR code will appear here</p>
+                        <button id="downloadQrCodeButton" class="btn-success text-white font-bold py-3 px-6 rounded-2xl shadow-lg hidden mt-4">
+                            <i class="fas fa-download icon-animate mr-2"></i>Download QR Code
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Markdown Viewer Section -->
+        <div id="markdownViewerSection" class="converter-section hidden">
+            <p class="text-gray-600 mb-8 text-lg">Write Markdown and see live HTML preview</p>
+            <div class="flex gap-4 mb-6">
+                <button id="copyMarkdownHtmlButton" class="btn-secondary flex-1 text-white font-bold py-4 px-6 rounded-2xl shadow-lg">
+                    <i class="fas fa-copy icon-animate mr-2"></i>Copy HTML
+                </button>
+                <button id="downloadMarkdownHtmlButton" class="btn-success flex-1 text-white font-bold py-4 px-6 rounded-2xl shadow-lg">
+                    <i class="fas fa-download icon-animate mr-2"></i>Download HTML
+                </button>
+            </div>
+            <div class="flex flex-col md:flex-row gap-6">
+                <div class="flex-1">
+                    <label for="markdownInput" class="block text-gray-800 text-sm font-bold mb-3 text-left">Markdown Editor:</label>
+                    <textarea id="markdownInput" class="w-full p-4 border-2 border-purple-200 rounded-2xl bg-white text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[450px]" placeholder="# Hello Markdown&#10;&#10;Write your content here..."></textarea>
+                </div>
+                <div class="flex-1">
+                    <label class="block text-gray-800 text-sm font-bold mb-3 text-left">Live Preview:</label>
+                    <div id="markdownPreview" class="text-left p-6 border-2 border-purple-200 rounded-2xl min-h-[450px] overflow-y-auto"></div>
                 </div>
             </div>
         </div>
@@ -188,463 +439,338 @@
         const messageBox = document.getElementById('messageBox');
         const tabCsvToJson = document.getElementById('tabCsvToJson');
         const tabJsonToCsv = document.getElementById('tabJsonToCsv');
-        const tabJsonBeautifier = document.getElementById('tabJsonBeautifier'); // JSON Lint tab reference
+        const tabJsonBeautifier = document.getElementById('tabJsonBeautifier');
+        const tabJsonStringify = document.getElementById('tabJsonStringify');
+        const tabTextDelimiter = document.getElementById('tabTextDelimiter');
+        const tabQrCodeGenerator = document.getElementById('tabQrCodeGenerator');
+        const tabMarkdownViewer = document.getElementById('tabMarkdownViewer');
 
         const csvToJsonSection = document.getElementById('csvToJsonSection');
         const jsonToCsvSection = document.getElementById('jsonToCsvSection');
-        const jsonBeautifierSection = document.getElementById('jsonBeautifierSection'); // JSON Lint section reference
+        const jsonBeautifierSection = document.getElementById('jsonBeautifierSection');
+        const jsonStringifySection = document.getElementById('jsonStringifySection');
+        const textDelimiterSection = document.getElementById('textDelimiterSection');
+        const qrCodeGeneratorSection = document.getElementById('qrCodeGeneratorSection');
+        const markdownViewerSection = document.getElementById('markdownViewerSection');
+
+        const downloadBeautifiedJsonButton = document.getElementById('downloadBeautifiedJsonButton');
+        const copyBeautifiedJsonButton = document.getElementById('copyBeautifiedJsonButton');
+        
+        const jsonToStringButton = document.getElementById('jsonToStringButton');
+        const stringToJsonButton = document.getElementById('stringToJsonButton');
+        const copyStringifyResultButton = document.getElementById('copyStringifyResultButton');
+        const stringifyInput = document.getElementById('stringifyInput');
+        const stringifyOutput = document.getElementById('stringifyOutput');
+
+        const downloadReplacedTextButton = document.getElementById('downloadReplacedTextButton');
+        const copyReplacedTextButton = document.getElementById('copyReplacedTextButton');
+        const downloadQrCodeButton = document.getElementById('downloadQrCodeButton');
+        const qrCodeCanvas = document.getElementById('qrCodeCanvas');
+        const qrCodePlaceholder = document.getElementById('qrCodePlaceholder');
+        const markdownPreview = document.getElementById('markdownPreview');
 
         // --- Utility Functions ---
 
-        /**
-         * Adjusts the height of a textarea to fit its content.
-         * @param {HTMLElement} textarea - The textarea element to adjust.
-         */
         function adjustTextareaHeight(textarea) {
-            textarea.style.height = 'auto'; // Reset height to recalculate
-            textarea.style.height = (textarea.scrollHeight + 2) + 'px'; // Set height to scrollHeight + a small buffer
+            textarea.style.height = 'auto';
+            textarea.style.height = (textarea.scrollHeight + 2) + 'px';
         }
 
-        /**
-         * Displays a message in the message box.
-         * @param {string} message - The message to display.
-         * @param {string} type - The type of message ('success', 'error', 'info').
-         */
         function showMessage(message, type) {
             messageBox.textContent = message;
             messageBox.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800', 'bg-blue-100', 'text-blue-800');
-            if (type === 'success') {
-                messageBox.classList.add('bg-green-100', 'text-green-800');
-            } else if (type === 'error') {
-                messageBox.classList.add('bg-red-100', 'text-red-800');
-            } else { // info
-                messageBox.classList.add('bg-blue-100', 'text-blue-800');
-            }
+            if (type === 'success') messageBox.classList.add('bg-green-100', 'text-green-800');
+            else if (type === 'error') messageBox.classList.add('bg-red-100', 'text-red-800');
+            else messageBox.classList.add('bg-blue-100', 'text-blue-800');
             messageBox.classList.remove('hidden');
         }
 
-        /**
-         * Hides the message box.
-         */
         function hideMessageBox() {
             messageBox.classList.add('hidden');
         }
 
-        /**
-         * Switches the active tab and displays the corresponding converter section.
-         * @param {HTMLElement} activeTabButton - The button that was clicked.
-         * @param {HTMLElement} activeSection - The section to show.
-         */
+        function downloadText(textContent, filename, mimeType = 'text/plain') {
+            const blob = new Blob([textContent], { type: `${mimeType};charset=utf-8;` });
+            const link = document.createElement('a');
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            } else {
+                showMessage('Your browser does not support downloads.', 'info');
+            }
+        }
+
+        function copyToClipboard(text, successMsg) {
+            const temp = document.createElement('textarea');
+            temp.value = text;
+            document.body.appendChild(temp);
+            temp.select();
+            try {
+                document.execCommand('copy');
+                showMessage(successMsg, 'success');
+            } catch (err) {
+                showMessage('Failed to copy.', 'error');
+            }
+            document.body.removeChild(temp);
+        }
+
         function switchTab(activeTabButton, activeSection) {
-            // Remove active class from all tab buttons
             document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-            // Add active class to the clicked tab button
             activeTabButton.classList.add('active');
-
-            // Hide all converter sections
             document.querySelectorAll('.converter-section').forEach(section => section.classList.add('hidden'));
-            // Show the active section
             activeSection.classList.remove('hidden');
-
-            // Clear messages and reset inputs when switching
             hideMessageBox();
 
-            // Reset CSV to JSON section
+            // Resets
             document.getElementById('csvFileInput').value = '';
             document.getElementById('convertCsvToJsonButton').disabled = true;
             document.getElementById('jsonOutputContainer').classList.add('hidden');
             document.getElementById('jsonOutput').value = '';
-
-            // Reset JSON to CSV section
             document.getElementById('jsonFileInput').value = '';
             document.getElementById('convertJsonToCsvButton').disabled = true;
+            
+            document.getElementById('jsonInputToBeautify').value = '';
+            document.getElementById('beautifiedJsonOutput').value = '';
+            document.getElementById('beautifiedJsonOutput').style.height = '350px';
+            downloadBeautifiedJsonButton.classList.add('hidden');
+            copyBeautifiedJsonButton.classList.add('hidden');
 
-            // Reset JSON Lint section
-            jsonInputToBeautify.value = '';
-            beautifiedJsonOutput.value = '';
-            // Reset height for the beautified output when switching tabs
-            beautifiedJsonOutput.style.height = '150px'; // Set to a reasonable default height
-            downloadBeautifiedJsonButton.classList.add('hidden'); // Hide download button on tab switch
-            copyBeautifiedJsonButton.classList.add('hidden'); // Hide copy button on tab switch
+            stringifyInput.value = '';
+            stringifyOutput.value = '';
+            stringifyOutput.style.height = '350px';
+            copyStringifyResultButton.classList.add('hidden');
+            
+            document.getElementById('textInputToReplace').value = '';
+            document.getElementById('oldDelimiterInput').value = '';
+            document.getElementById('newDelimiterInput').value = '';
+            document.getElementById('replacedTextOutput').value = '';
+            document.getElementById('replacedTextOutput').style.height = '350px';
+            downloadReplacedTextButton.classList.add('hidden');
+            copyReplacedTextButton.classList.add('hidden');
+            
+            document.getElementById('qrCodeInput').value = '';
+            qrCodeCanvas.classList.add('hidden');
+            qrCodePlaceholder.classList.remove('hidden');
+            downloadQrCodeButton.classList.add('hidden');
+            
+            document.getElementById('markdownInput').value = '';
+            markdownPreview.innerHTML = '';
         }
 
-        // --- CSV to JSON Logic ---
-        const csvFileInput = document.getElementById('csvFileInput');
-        const convertCsvToJsonButton = document.getElementById('convertCsvToJsonButton');
-        const jsonOutput = document.getElementById('jsonOutput');
-        const jsonOutputContainer = document.getElementById('jsonOutputContainer');
-        const downloadJsonButton = document.getElementById('downloadJsonButton');
+        // --- CSV to JSON ---
+        document.getElementById('csvFileInput').addEventListener('change', () => {
+            document.getElementById('convertCsvToJsonButton').disabled = document.getElementById('csvFileInput').files.length === 0;
+            hideMessageBox();
+            document.getElementById('jsonOutputContainer').classList.add('hidden');
+        });
 
-        /**
-         * Parses a single CSV line into an array of fields, correctly handling
-         * commas within double-quoted fields and escaped double quotes ("").
-         * @param {string} line - The CSV line string.
-         * @returns {Array<string>} An array of parsed field values.
-         */
-        function parseCsvLine(line) {
-            const fields = [];
-            let inQuote = false;
-            let currentField = '';
+        document.getElementById('convertCsvToJsonButton').addEventListener('click', () => {
+            const file = document.getElementById('csvFileInput').files[0];
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const res = convertCsvToJson(e.target.result);
+                    document.getElementById('jsonOutput').value = JSON.stringify(res, null, 2);
+                    document.getElementById('jsonOutputContainer').classList.remove('hidden');
+                    showMessage('Converted successfully!', 'success');
+                } catch (err) { showMessage(err.message, 'error'); }
+            };
+            reader.readAsText(file);
+        });
 
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
+        document.getElementById('downloadJsonButton').addEventListener('click', () => {
+            downloadText(document.getElementById('jsonOutput').value, 'data.json', 'application/json');
+        });
 
-                if (char === '"') {
-                    // Check for escaped double quotes: ""
-                    if (inQuote && line[i + 1] === '"') {
-                        currentField += '"';
-                        i++; // Skip the next quote character as it's part of the escaped sequence
-                    } else {
-                        // Toggle inQuote state if it's an unescaped double quote
-                        inQuote = !inQuote;
-                    }
-                } else if (char === ',' && !inQuote) {
-                    // End of a field if outside of quotes
-                    fields.push(currentField.trim());
-                    currentField = ''; // Reset for next field
-                } else {
-                    // Accumulate characters into the current field
-                    currentField += char;
-                }
-            }
-            // Add the last field after the loop finishes
-            fields.push(currentField.trim());
-            return fields;
-        }
-
-        /**
-         * Converts a CSV string into an array of JSON objects.
-         * Assumes the first line of the CSV is the header row.
-         * @param {string} csvString - The full CSV content as a string.
-         * @returns {Array<Object>} An array of JSON objects.
-         */
         function convertCsvToJson(csvString) {
-            const lines = csvString.split(/\r?\n/).filter(line => line.trim() !== ''); // Split by newline, filter empty lines
-
-            if (lines.length === 0) {
-                return [];
-            }
-
-            // Parse the header row
+            const lines = csvString.split(/\r?\n/).filter(line => line.trim() !== '');
+            if (lines.length === 0) return [];
             const headers = parseCsvLine(lines[0]);
-
             const jsonArray = [];
-
-            // Iterate over the data rows (starting from the second line)
             for (let i = 1; i < lines.length; i++) {
-                const line = lines[i];
-                // Skip empty lines that might result from trailing newlines
-                if (line.trim() === '') continue;
-
-                const rowValues = parseCsvLine(line);
-                const rowObject = {};
-
-                // Ensure headers match values, handle cases where row might have fewer values than headers
-                headers.forEach((header, index) => {
-                    rowObject[header] = rowValues[index] !== undefined ? rowValues[index] : '';
-                });
-                jsonArray.push(rowObject);
+                const rowValues = parseCsvLine(lines[i]);
+                const obj = {};
+                headers.forEach((h, idx) => obj[h] = rowValues[idx] || '');
+                jsonArray.push(obj);
             }
-
             return jsonArray;
         }
 
-        /**
-         * Triggers the download of a JSON file.
-         * @param {string} jsonContent - The JSON string to download.
-         * @param {string} filename - The name of the file to download.
-         */
-        function downloadJson(jsonContent, filename) {
-            const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
-            const link = document.createElement('a');
-            if (link.download !== undefined) {
-                const url = URL.createObjectURL(blob);
-                link.setAttribute('href', url);
-                link.setAttribute('download', filename);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-            } else {
-                showMessage('Your browser does not support automatic downloads. Please copy the content manually from the text area.', 'info');
+        function parseCsvLine(line) {
+            const fields = [];
+            let inQuote = false, cur = '';
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"') {
+                    if (inQuote && line[i+1] === '"') { cur += '"'; i++; }
+                    else inQuote = !inQuote;
+                } else if (char === ',' && !inQuote) { fields.push(cur.trim()); cur = ''; }
+                else cur += char;
             }
+            fields.push(cur.trim());
+            return fields;
         }
 
-        // --- CSV to JSON Event Listeners ---
-        csvFileInput.addEventListener('change', () => {
-            if (csvFileInput.files.length > 0) {
-                convertCsvToJsonButton.disabled = false;
-                hideMessageBox();
-                jsonOutputContainer.classList.add('hidden');
-                jsonOutput.value = '';
-            } else {
-                convertCsvToJsonButton.disabled = true;
-            }
-        });
-
-        convertCsvToJsonButton.addEventListener('click', () => {
-            const file = csvFileInput.files[0];
-            if (!file) {
-                showMessage('Please select a CSV file first.', 'error');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const csvString = e.target.result;
-                    const jsonResult = convertCsvToJson(csvString);
-                    jsonOutput.value = JSON.stringify(jsonResult, null, 2);
-                    jsonOutputContainer.classList.remove('hidden');
-                    showMessage('Conversion successful! You can now view and download the JSON.', 'success');
-                } catch (error) {
-                    console.error('Error processing CSV file:', error);
-                    showMessage(`Error processing CSV file: ${error.message}`, 'error');
-                    jsonOutputContainer.classList.add('hidden');
-                    jsonOutput.value = '';
-                }
-            };
-            reader.onerror = () => {
-                showMessage('Error reading CSV file.', 'error');
-                jsonOutputContainer.classList.add('hidden');
-                jsonOutput.value = '';
-            };
-            reader.readAsText(file);
-        });
-
-        downloadJsonButton.addEventListener('click', () => {
-            const jsonContent = jsonOutput.value;
-            if (jsonContent.trim() === '') {
-                showMessage('No JSON content to download.', 'error');
-                return;
-            }
-            const originalFilename = csvFileInput.files[0] ? csvFileInput.files[0].name : 'download';
-            const jsonFilename = originalFilename.replace(/\.csv$/, '.json').replace(/(\.\w+)$/, '.json'); // Ensure .json extension
-            downloadJson(jsonContent, jsonFilename);
-        });
-
-        // --- JSON to CSV Logic ---
-        const jsonFileInput = document.getElementById('jsonFileInput');
-        const convertJsonToCsvButton = document.getElementById('convertJsonToCsvButton');
-
-        /**
-         * Converts an array of JSON objects into a CSV string.
-         * Assumes the JSON data is an array of objects with consistent keys.
-         * @param {Array<Object>} jsonData - The array of JSON objects.
-         * @returns {string} The CSV formatted string.
-         */
-        function convertJsonToCsv(jsonData) {
-            if (jsonData.length === 0) {
-                return '';
-            }
-
-            // Get all unique headers from all objects to ensure comprehensive CSV
-            const allHeaders = new Set();
-            jsonData.forEach(obj => {
-                Object.keys(obj).forEach(key => allHeaders.add(key));
-            });
-            const headers = Array.from(allHeaders);
-
-            const csvRows = [];
-
-            // Add headers row
-            csvRows.push(headers.map(header => `"${header}"`).join(','));
-
-            // Add data rows
-            jsonData.forEach(row => {
-                const values = headers.map(header => {
-                    let value = row[header];
-                    if (value === null || value === undefined) {
-                        value = ''; // Handle null/undefined values
-                    } else if (typeof value === 'object') {
-                        // For nested objects or arrays, stringify them
-                        value = JSON.stringify(value);
-                    }
-                    // Escape double quotes by doubling them, and wrap in double quotes if it contains comma, double quote or newline
-                    const needsQuotes = String(value).includes(',') || String(value).includes('"') || String(value).includes('\n') || String(value).includes('\r');
-                    let escapedValue = String(value).replace(/"/g, '""');
-                    return needsQuotes ? `"${escapedValue}"` : escapedValue;
-                });
-                csvRows.push(values.join(','));
-            });
-
-            return csvRows.join('\n');
-        }
-
-        /**
-         * Triggers the download of a CSV file.
-         * @param {string} csvContent - The CSV string to download.
-         * @param {string} filename - The name of the file to download.
-         */
-        function downloadCsv(csvContent, filename) {
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            if (link.download !== undefined) {
-                const url = URL.createObjectURL(blob);
-                link.setAttribute('href', url);
-                link.setAttribute('download', filename);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-            } else {
-                showMessage('Your browser does not support automatic downloads. Please copy the content manually.', 'info');
-                window.open('data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent));
-            }
-        }
-
-        // --- JSON to CSV Event Listeners ---
-        jsonFileInput.addEventListener('change', () => {
-            if (jsonFileInput.files.length > 0) {
-                convertJsonToCsvButton.disabled = false;
-                hideMessageBox();
-            } else {
-                convertJsonToCsvButton.disabled = true;
-            }
-        });
-
-        convertJsonToCsvButton.addEventListener('click', () => {
-            const file = jsonFileInput.files[0];
-            if (!file) {
-                showMessage('Please select a JSON file first.', 'error');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const jsonString = e.target.result;
-                    const data = JSON.parse(jsonString);
-
-                    // Validate if data is an array of objects
-                    if (!Array.isArray(data) || data.length === 0 || typeof data[0] !== 'object' || data[0] === null) {
-                        showMessage('Invalid JSON format. Expected an array of objects for CSV conversion.', 'error');
-                        return;
-                    }
-
-                    const csvContent = convertJsonToCsv(data);
-                    downloadCsv(csvContent, file.name.replace('.json', '.csv'));
-                    showMessage('Conversion successful! Your CSV file is downloading.', 'success');
-                } catch (error) {
-                    console.error('Error processing JSON file for CSV conversion:', error);
-                    showMessage(`Error processing JSON file for CSV conversion: ${error.message}`, 'error');
-                }
-            };
-            reader.onerror = () => {
-                showMessage('Error reading JSON file for CSV conversion.', 'error');
-            };
-            reader.readAsText(file);
-        });
-
-        // --- JSON Lint Logic ---
-        const jsonInputToBeautify = document.getElementById('jsonInputToBeautify');
-        const beautifyJsonButton = document.getElementById('beautifyJsonButton');
-        const beautifiedJsonOutput = document.getElementById('beautifiedJsonOutput');
-        const downloadBeautifiedJsonButton = document.getElementById('downloadBeautifiedJsonButton');
-        const copyBeautifiedJsonButton = document.getElementById('copyBeautifiedJsonButton'); // New reference for copy button
-
-        /**
-         * Lints and Beautifies a JSON string.
-         */
-        beautifyJsonButton.addEventListener('click', () => {
-            const inputString = jsonInputToBeautify.value.trim();
+        // --- JSON to CSV ---
+        document.getElementById('jsonFileInput').addEventListener('change', () => {
+            document.getElementById('convertJsonToCsvButton').disabled = document.getElementById('jsonFileInput').files.length === 0;
             hideMessageBox();
-            beautifiedJsonOutput.value = ''; // Clear previous output
-            beautifiedJsonOutput.style.height = 'auto'; // Reset height
-            downloadBeautifiedJsonButton.classList.add('hidden'); // Hide download button
-            copyBeautifiedJsonButton.classList.add('hidden'); // Hide copy button
-
-
-            if (inputString === '') {
-                showMessage('Please paste a JSON string to lint and beautify.', 'info');
-                return;
-            }
-
-            try {
-                const parsedJson = JSON.parse(inputString);
-                const beautifiedString = JSON.stringify(parsedJson, null, 2); // 2 spaces for indentation
-                beautifiedJsonOutput.value = beautifiedString;
-                adjustTextareaHeight(beautifiedJsonOutput); // Adjust height after setting content
-                downloadBeautifiedJsonButton.classList.remove('hidden'); // Show download button
-                copyBeautifiedJsonButton.classList.remove('hidden'); // Show copy button
-                showMessage('JSON linted and beautified successfully!', 'success');
-            } catch (error) {
-                console.error('Error parsing JSON for linting/beautification:', error);
-                showMessage(`Invalid JSON format: ${error.message}. Please check your input.`, 'error');
-            }
         });
 
-        // Event listener for downloading beautified JSON
-        downloadBeautifiedJsonButton.addEventListener('click', () => {
-            const jsonContent = beautifiedJsonOutput.value;
-            if (jsonContent.trim() === '') {
-                showMessage('No beautified JSON content to download.', 'error');
-                return;
-            }
-            const filename = 'beautified_json.json';
-            const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
+        document.getElementById('convertJsonToCsvButton').addEventListener('click', () => {
+            const file = document.getElementById('jsonFileInput').files[0];
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    const csv = convertJsonToCsv(data);
+                    downloadText(csv, 'data.csv', 'text/csv');
+                    showMessage('CSV Downloading...', 'success');
+                } catch (err) { showMessage('Invalid JSON file', 'error'); }
+            };
+            reader.readAsText(file);
+        });
+
+        function convertJsonToCsv(jsonData) {
+            if (!jsonData.length) return '';
+            const keys = Array.from(new Set(jsonData.flatMap(Object.keys)));
+            const rows = [keys.join(',')];
+            jsonData.forEach(item => {
+                rows.push(keys.map(k => {
+                    let v = item[k] === null || item[k] === undefined ? '' : item[k];
+                    if (typeof v === 'object') v = JSON.stringify(v);
+                    v = String(v).replace(/"/g, '""');
+                    return v.includes(',') || v.includes('"') || v.includes('\n') ? `"${v}"` : v;
+                }).join(','));
+            });
+            return rows.join('\n');
+        }
+
+        // --- JSON Lint ---
+        document.getElementById('beautifyJsonButton').addEventListener('click', () => {
+            const val = document.getElementById('jsonInputToBeautify').value.trim();
+            hideMessageBox();
+            if (!val) { showMessage('Please paste JSON first', 'info'); return; }
+            try {
+                const parsed = JSON.parse(val);
+                document.getElementById('beautifiedJsonOutput').value = JSON.stringify(parsed, null, 2);
+                adjustTextareaHeight(document.getElementById('beautifiedJsonOutput'));
+                downloadBeautifiedJsonButton.classList.remove('hidden');
+                copyBeautifiedJsonButton.classList.remove('hidden');
+                showMessage('JSON Beautified successfully!', 'success');
+            } catch (err) { showMessage(err.message, 'error'); }
+        });
+
+        downloadBeautifiedJsonButton.addEventListener('click', () => downloadText(document.getElementById('beautifiedJsonOutput').value, 'pretty.json', 'application/json'));
+        copyBeautifiedJsonButton.addEventListener('click', () => copyToClipboard(document.getElementById('beautifiedJsonOutput').value, 'JSON Copied to clipboard!'));
+
+        // --- JSON Stringify (JSON <-> String) ---
+        jsonToStringButton.addEventListener('click', () => {
+            const val = stringifyInput.value.trim();
+            hideMessageBox();
+            if (!val) return showMessage('Please paste JSON first', 'info');
+            try {
+                const parsed = JSON.parse(val);
+                stringifyOutput.value = JSON.stringify(JSON.stringify(parsed));
+                adjustTextareaHeight(stringifyOutput);
+                copyStringifyResultButton.classList.remove('hidden');
+                showMessage('Converted to escaped string!', 'success');
+            } catch (err) { showMessage('Invalid JSON Object', 'error'); }
+        });
+
+        stringToJsonButton.addEventListener('click', () => {
+            const val = stringifyInput.value.trim();
+            hideMessageBox();
+            if (!val) return showMessage('Please paste escaped string first', 'info');
+            try {
+                let result = val;
+                if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+                   result = JSON.parse(val);
+                }
+                const parsedObj = JSON.parse(result);
+                stringifyOutput.value = JSON.stringify(parsedObj, null, 2);
+                adjustTextareaHeight(stringifyOutput);
+                copyStringifyResultButton.classList.remove('hidden');
+                showMessage('Parsed to JSON object!', 'success');
+            } catch (err) { showMessage('Invalid escaped string or JSON', 'error'); }
+        });
+
+        copyStringifyResultButton.addEventListener('click', () => {
+            copyToClipboard(stringifyOutput.value, 'Result Copied to clipboard!');
+        });
+
+        // --- Text Delimiter ---
+        document.getElementById('replaceDelimiterButton').addEventListener('click', () => {
+            const input = document.getElementById('textInputToReplace').value;
+            const oldD = document.getElementById('oldDelimiterInput').value;
+            const newD = document.getElementById('newDelimiterInput').value;
+            hideMessageBox();
+            if (!input) return showMessage('Please paste text', 'info');
+            if (!oldD) return showMessage('Please enter old delimiter', 'error');
+            const result = input.replaceAll(oldD, newD);
+            document.getElementById('replacedTextOutput').value = result;
+            adjustTextareaHeight(document.getElementById('replacedTextOutput'));
+            downloadReplacedTextButton.classList.remove('hidden');
+            copyReplacedTextButton.classList.remove('hidden');
+            showMessage('Delimiter replaced successfully!', 'success');
+        });
+
+        downloadReplacedTextButton.addEventListener('click', () => downloadText(document.getElementById('replacedTextOutput').value, 'replaced.txt'));
+        copyReplacedTextButton.addEventListener('click', () => copyToClipboard(document.getElementById('replacedTextOutput').value, 'Text Copied to clipboard!'));
+
+        // --- QR Code ---
+        let qr = new QRious({ element: qrCodeCanvas, size: 256 });
+        document.getElementById('generateQrCodeButton').addEventListener('click', () => {
+            const val = document.getElementById('qrCodeInput').value.trim();
+            hideMessageBox();
+            if (!val) return showMessage('Please enter text or link', 'error');
+            qr.set({ value: val, foreground: '#667eea' });
+            qrCodeCanvas.classList.remove('hidden');
+            qrCodePlaceholder.classList.add('hidden');
+            downloadQrCodeButton.classList.remove('hidden');
+            showMessage('QR Code Generated successfully!', 'success');
+        });
+
+        downloadQrCodeButton.addEventListener('click', () => {
             const link = document.createElement('a');
-            if (link.download !== undefined) {
-                const url = URL.createObjectURL(blob);
-                link.setAttribute('href', url);
-                link.setAttribute('download', filename);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-            } else {
-                showMessage('Your browser does not support automatic downloads. Please copy the content manually from the text area.', 'info');
-            }
+            link.href = qrCodeCanvas.toDataURL("image/png");
+            link.download = 'qrcode.png';
+            link.click();
         });
 
-        // New Event listener for copying beautified JSON
-        copyBeautifiedJsonButton.addEventListener('click', () => {
-            const jsonContent = beautifiedJsonOutput.value;
-            if (jsonContent.trim() === '') {
-                showMessage('No beautified JSON content to copy.', 'error');
-                return;
-            }
-
-            try {
-                // Select the text in the textarea
-                beautifiedJsonOutput.select();
-                beautifiedJsonOutput.setSelectionRange(0, 99999); // For mobile devices
-
-                // Copy the text to the clipboard
-                document.execCommand('copy');
-                showMessage('Beautified JSON copied to clipboard!', 'success');
-            } catch (err) {
-                console.error('Failed to copy text: ', err);
-                showMessage('Failed to copy JSON. Please copy manually.', 'error');
-            }
+        // --- Markdown Viewer ---
+        document.getElementById('markdownInput').addEventListener('input', () => {
+            markdownPreview.innerHTML = marked.parse(document.getElementById('markdownInput').value);
         });
 
-        // --- Tab Navigation Event Listeners ---
-        tabCsvToJson.addEventListener('click', () => {
-            switchTab(tabCsvToJson, csvToJsonSection);
+        document.getElementById('copyMarkdownHtmlButton').addEventListener('click', () => {
+            if (!markdownPreview.innerHTML) return showMessage('Please write markdown first', 'info');
+            copyToClipboard(markdownPreview.innerHTML, 'HTML Copied to clipboard!');
         });
 
-        tabJsonToCsv.addEventListener('click', () => {
-            switchTab(tabJsonToCsv, jsonToCsvSection);
+        document.getElementById('downloadMarkdownHtmlButton').addEventListener('click', () => {
+            if (!markdownPreview.innerHTML) return showMessage('Please write markdown first', 'info');
+            const fullHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Rendered Markdown</title><style>body{font-family:sans-serif;padding:2em;}</style></head><body>${markdownPreview.innerHTML}</body></html>`;
+            downloadText(fullHtml, 'rendered.html', 'text/html');
         });
 
-        tabJsonBeautifier.addEventListener('click', () => { // JSON Lint tab click listener
-            switchTab(tabJsonBeautifier, jsonBeautifierSection);
-            // On tab switch, hide the download button for beautified JSON until content is generated
-            downloadBeautifiedJsonButton.classList.add('hidden');
-            copyBeautifiedJsonButton.classList.add('hidden'); // Also hide copy button on tab switch
-        });
+        // --- Tab Listeners ---
+        tabCsvToJson.addEventListener('click', () => switchTab(tabCsvToJson, csvToJsonSection));
+        tabJsonToCsv.addEventListener('click', () => switchTab(tabJsonToCsv, jsonToCsvSection));
+        tabJsonBeautifier.addEventListener('click', () => switchTab(tabJsonBeautifier, jsonBeautifierSection));
+        tabJsonStringify.addEventListener('click', () => switchTab(tabJsonStringify, jsonStringifySection));
+        tabTextDelimiter.addEventListener('click', () => switchTab(tabTextDelimiter, textDelimiterSection));
+        tabQrCodeGenerator.addEventListener('click', () => switchTab(tabQrCodeGenerator, qrCodeGeneratorSection));
+        tabMarkdownViewer.addEventListener('click', () => switchTab(tabMarkdownViewer, markdownViewerSection));
 
-        // Initialize the app by showing the CSV to JSON section by default
         document.addEventListener('DOMContentLoaded', () => {
-            // Set initial state for all buttons/sections
-            convertCsvToJsonButton.disabled = true;
-            convertJsonToCsvButton.disabled = true;
-            // No need to disable beautifyJsonButton, it's always ready for text input
-            switchTab(tabCsvToJson, csvToJsonSection); // Explicitly set initial tab
+            switchTab(tabCsvToJson, csvToJsonSection);
         });
     </script>
 </body>
