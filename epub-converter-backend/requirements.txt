@@ -1,8 +1,8 @@
 Flask==3.0.0
 flask-cors==4.0.0
 EbookLib==0.18
-WeasyPrint==60.1
 beautifulsoup4==4.12.2
-lxml==4.9.3
+reportlab==4.0.7
 Werkzeug==3.0.1
 gunicorn==21.2.0
+lxml==5.1.0
