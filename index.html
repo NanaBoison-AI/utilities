@@ -117,6 +117,7 @@
     box-shadow: 0 4px 10px -4px rgba(0,0,0,.15);
     position: relative;
     z-index: 2;
+    white-space: nowrap;   /* never wrap to a second line */
   }
   #noBtn.loose { position: fixed; margin: 0; z-index: 50; }
 
@@ -257,8 +258,6 @@
       </div>
       <p class="sub" style="margin-bottom:18px">Can't wait to see you. 🥹</p>
       <a class="btn btn-yes" id="gcal" href="#" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block;margin-bottom:12px">📅 Add to Google Calendar</a>
-      <br/>
-      <button class="btn btn-ghost" id="restart">Start over</button>
     </section>
 
   </div>
@@ -282,42 +281,111 @@
   const state = { date: null, activity: null };
   const INVITE_EMAIL = 'nabbyafua@gmail.com'; // guest invited on the calendar event
 
-  /* ---------- Screen 1: runaway No button ---------- */
+  /* ---------- Screen 1: runaway No button (bounces + dodges cursor) ---------- */
   const noBtn = document.getElementById('noBtn');
   const yesBtn = document.getElementById('yesBtn');
-  const card = document.getElementById('card');
-  let dodges = 0;
 
-  function moveNo() {
-    dodges++;
-    // detach to fixed positioning so it can roam the whole viewport
-    if (!noBtn.classList.contains('loose')) {
-      noBtn.classList.add('loose');
-    }
-    const pad = 12;
-    const w = noBtn.offsetWidth, h = noBtn.offsetHeight;
-    const maxX = window.innerWidth - w - pad;
-    const maxY = window.innerHeight - h - pad;
-    const x = Math.max(pad, Math.random() * maxX);
-    const y = Math.max(pad, Math.random() * maxY);
-    noBtn.style.left = x + 'px';
-    noBtn.style.top = y + 'px';
-    // make Yes more tempting each dodge
-    const scale = Math.min(1 + dodges * 0.12, 2.2);
-    yesBtn.style.transform = 'scale(' + scale + ')';
-    // playful taunts
-    const taunts = ['No', 'Nope!', 'Try again 😏', 'Catch me!', 'Nuh uh', 'Too slow!', 'Really? 🙃'];
-    noBtn.textContent = taunts[Math.min(dodges, taunts.length - 1)];
+  const PAD = 10;                 // keep it off the very edge
+  const DODGE_RADIUS = 140;       // how close the cursor can get before it bolts
+  const MAX_SPEED = 16;
+  const MIN_SPEED = 2.4;          // never fully stops — always drifting around
+  let loose = false;
+  let dodges = 0;
+  let rafId = null;
+  const pos = { x: 0, y: 0 };
+  const vel = { x: 0, y: 0 };
+  const taunts = ['Nope!', 'Try again 😏', 'Catch me!', 'Nuh uh', 'Too slow!', 'Really? 🙃', 'Missed me!'];
+
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+  function goLoose() {
+    if (loose) return;
+    loose = true;
+    const r = noBtn.getBoundingClientRect();
+    pos.x = r.left; pos.y = r.top;
+    noBtn.classList.add('loose');
+    // Reparent to <body> so position:fixed is relative to the viewport.
+    // (An ancestor with any transform — e.g. the screen's entry animation —
+    // would otherwise become the containing block and throw off coordinates.)
+    document.body.appendChild(noBtn);
+    noBtn.style.left = pos.x + 'px';
+    noBtn.style.top = pos.y + 'px';
+    const ang = Math.random() * Math.PI * 2;
+    vel.x = Math.cos(ang) * 5;
+    vel.y = Math.sin(ang) * 5;
+    if (!rafId) rafId = requestAnimationFrame(tick);
   }
 
-  noBtn.addEventListener('mouseover', moveNo);
-  noBtn.addEventListener('mousedown', moveNo);
-  noBtn.addEventListener('touchstart', function (e) { e.preventDefault(); moveNo(); }, { passive: false });
-  noBtn.addEventListener('click', function (e) { e.preventDefault(); moveNo(); });
+  function bolt(fromX, fromY) {
+    // shove the button directly away from a point (the cursor/touch)
+    dodges++;
+    const w = noBtn.offsetWidth, h = noBtn.offsetHeight;
+    let dx = (pos.x + w / 2) - fromX;
+    let dy = (pos.y + h / 2) - fromY;
+    const dist = Math.hypot(dx, dy) || 1;
+    const force = 11;
+    vel.x += (dx / dist) * force;
+    vel.y += (dy / dist) * force;
+    noBtn.textContent = taunts[Math.min(dodges - 1, taunts.length - 1)];
+    const scale = Math.min(1 + dodges * 0.1, 2.2);
+    yesBtn.style.transform = 'scale(' + scale + ')';
+  }
+
+  function tick() {
+    const w = noBtn.offsetWidth, h = noBtn.offsetHeight;
+    const maxX = window.innerWidth - w - PAD;
+    const maxY = window.innerHeight - h - PAD;
+
+    pos.x += vel.x;
+    pos.y += vel.y;
+
+    // bounce off the walls (clamp pos itself so it can never leave the viewport)
+    if (pos.x <= PAD) { pos.x = PAD; vel.x = Math.abs(vel.x); }
+    else if (pos.x >= maxX) { pos.x = Math.max(PAD, maxX); vel.x = -Math.abs(vel.x); }
+    if (pos.y <= PAD) { pos.y = PAD; vel.y = Math.abs(vel.y); }
+    else if (pos.y >= maxY) { pos.y = Math.max(PAD, maxY); vel.y = -Math.abs(vel.y); }
+    pos.x = clamp(pos.x, PAD, Math.max(PAD, maxX));
+    pos.y = clamp(pos.y, PAD, Math.max(PAD, maxY));
+
+    // gentle damping, but keep it always moving
+    vel.x *= 0.98; vel.y *= 0.98;
+    let sp = Math.hypot(vel.x, vel.y);
+    if (sp > MAX_SPEED) { vel.x = vel.x / sp * MAX_SPEED; vel.y = vel.y / sp * MAX_SPEED; }
+    else if (sp < MIN_SPEED) {
+      if (sp < 0.001) { const a = Math.random() * Math.PI * 2; vel.x = Math.cos(a); vel.y = Math.sin(a); sp = 1; }
+      vel.x = vel.x / sp * MIN_SPEED; vel.y = vel.y / sp * MIN_SPEED;
+    }
+
+    noBtn.style.left = pos.x + 'px';
+    noBtn.style.top = pos.y + 'px';
+    rafId = requestAnimationFrame(tick);
+  }
+
+  // Cursor cat-and-mouse: when the pointer gets close, the button flees.
+  document.addEventListener('mousemove', function (e) {
+    if (!screens[1].classList.contains('active')) return;
+    if (!loose) { goLoose(); return; }
+    const w = noBtn.offsetWidth, h = noBtn.offsetHeight;
+    const cx = pos.x + w / 2, cy = pos.y + h / 2;
+    const dist = Math.hypot(cx - e.clientX, cy - e.clientY);
+    if (dist < DODGE_RADIUS) bolt(e.clientX, e.clientY);
+  });
+
+  // Touch / direct attempts: it darts away instead of being pressed.
+  noBtn.addEventListener('touchstart', function (e) {
+    e.preventDefault();
+    goLoose();
+    const t = e.touches[0];
+    bolt(t ? t.clientX : pos.x, t ? t.clientY : pos.y);
+  }, { passive: false });
+  noBtn.addEventListener('mousedown', function (e) { e.preventDefault(); goLoose(); bolt(e.clientX, e.clientY); });
+  noBtn.addEventListener('click', function (e) { e.preventDefault(); });
 
   yesBtn.addEventListener('click', function () {
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    loose = false;
     noBtn.classList.remove('loose');
-    noBtn.style.cssText = '';
+    noBtn.style.display = 'none';  // it lives in <body> now; just retire it
     burstHearts(28);
     show(2);
   });
@@ -363,16 +431,6 @@
     document.getElementById('gcal').href = buildGCalUrl(state.date, state.activity, INVITE_EMAIL);
     burstHearts(40);
     show(5);
-  });
-
-  /* ---------- restart ---------- */
-  document.getElementById('restart').addEventListener('click', function () {
-    state.date = null; state.activity = null; dodges = 0;
-    dateInput.value = '';
-    grid.querySelectorAll('.opt').forEach(o => o.classList.remove('sel'));
-    yesBtn.style.transform = '';
-    noBtn.textContent = 'No';
-    show(1);
   });
 
   /* ---------- Google Calendar link ---------- */
