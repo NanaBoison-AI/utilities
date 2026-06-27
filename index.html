@@ -261,8 +261,7 @@
         <div class="line">📆 <b id="sumDate">—</b></div>
         <div class="line">✨ <b id="sumAct">—</b></div>
       </div>
-      <p class="sub" style="margin-bottom:18px">A confirmation is on its way to your inbox. Can't wait to see you. 🥹</p>
-      <a class="btn btn-yes" id="gcal" href="#" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block;margin-bottom:12px">📅 Add to Google Calendar</a>
+      <p class="sub" style="margin-bottom:0">A confirmation is on its way to your inbox. Can't wait to see you. 🥹</p>
     </section>
 
   </div>
@@ -284,7 +283,6 @@
   }
 
   const state = { date: null, activity: null, email: null };
-  const INVITE_EMAIL = 'nabbyafua@gmail.com'; // guest invited on the calendar event
   // Paste the deployed Google Apps Script web-app URL here (see apps-script/README.md).
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx7HEP8RC0kIqtpGu_ta-Luyjn_Wv0vxpDsrWfHhpC3jh5dlUyy8s5oIuk2KkhT9z9R/exec';
 
@@ -469,7 +467,6 @@
     const pretty = d.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
     document.getElementById('sumDate').textContent = pretty;
     document.getElementById('sumAct').textContent = state.activity;
-    document.getElementById('gcal').href = buildGCalUrl(state.date, state.activity, INVITE_EMAIL);
     burstHearts(40);
     show(5);
   }
@@ -497,27 +494,6 @@
     if (submitStatus.classList.contains('err')) setStatus('', null);
   });
 
-  /* ---------- Google Calendar link ---------- */
-  function buildGCalUrl(isoDate, activity, email) {
-    // All-day event. Google expects dates=YYYYMMDD/YYYYMMDD with the end
-    // date exclusive, so the end is the day after the start.
-    const start = isoDate.replace(/-/g, '');
-    const d = new Date(isoDate + 'T00:00:00');
-    d.setDate(d.getDate() + 1);
-    const end = d.toISOString().split('T')[0].replace(/-/g, '');
-    const cleanActivity = activity.replace(/[\u{1F000}-\u{1FFFF}☀-➿]/gu, '').trim();
-    const params = new URLSearchParams({
-      action: 'TEMPLATE',
-      text: 'Our date 💕 — ' + cleanActivity,
-      dates: start + '/' + end,
-      details: "Our cute little plan: " + cleanActivity + ". Can't wait! 🥹",
-    });
-    // When a valid guest email is supplied, Google invites them on save.
-    if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      params.set('add', email);
-    }
-    return 'https://calendar.google.com/calendar/render?' + params.toString();
-  }
 
   /* ---------- floating hearts ---------- */
   const heartLayer = document.getElementById('hearts');
