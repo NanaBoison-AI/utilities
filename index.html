@@ -254,6 +254,8 @@
         <div class="line">✨ <b id="sumAct">—</b></div>
       </div>
       <p class="sub" style="margin-bottom:18px">Can't wait to see you. 🥹</p>
+      <a class="btn btn-yes" id="gcal" href="#" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block;margin-bottom:12px">📅 Add to Google Calendar</a>
+      <br/>
       <button class="btn btn-ghost" id="restart">Start over</button>
     </section>
 
@@ -355,6 +357,7 @@
     const pretty = d.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
     document.getElementById('sumDate').textContent = pretty;
     document.getElementById('sumAct').textContent = state.activity;
+    document.getElementById('gcal').href = buildGCalUrl(state.date, state.activity);
     burstHearts(40);
     show(5);
   });
@@ -368,6 +371,24 @@
     noBtn.textContent = 'No';
     show(1);
   });
+
+  /* ---------- Google Calendar link ---------- */
+  function buildGCalUrl(isoDate, activity) {
+    // All-day event. Google expects dates=YYYYMMDD/YYYYMMDD with the end
+    // date exclusive, so the end is the day after the start.
+    const start = isoDate.replace(/-/g, '');
+    const d = new Date(isoDate + 'T00:00:00');
+    d.setDate(d.getDate() + 1);
+    const end = d.toISOString().split('T')[0].replace(/-/g, '');
+    const cleanActivity = activity.replace(/[\u{1F000}-\u{1FFFF}☀-➿]/gu, '').trim();
+    const params = new URLSearchParams({
+      action: 'TEMPLATE',
+      text: 'Our date 💕 — ' + cleanActivity,
+      dates: start + '/' + end,
+      details: "Our cute little plan: " + cleanActivity + ". Can't wait! 🥹",
+    });
+    return 'https://calendar.google.com/calendar/render?' + params.toString();
+  }
 
   /* ---------- floating hearts ---------- */
   const heartLayer = document.getElementById('hearts');
