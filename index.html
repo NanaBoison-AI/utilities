@@ -254,8 +254,7 @@
         <div class="line">📆 <b id="sumDate">—</b></div>
         <div class="line">✨ <b id="sumAct">—</b></div>
       </div>
-      <p class="sub" style="margin-bottom:14px">Can't wait to see you. 🥹</p>
-      <input type="email" id="inviteEmail" placeholder="Invite an email (optional) 💌" style="margin-bottom:14px" />
+      <p class="sub" style="margin-bottom:18px">Can't wait to see you. 🥹</p>
       <a class="btn btn-yes" id="gcal" href="#" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block;margin-bottom:12px">📅 Add to Google Calendar</a>
       <br/>
       <button class="btn btn-ghost" id="restart">Start over</button>
@@ -280,6 +279,7 @@
   }
 
   const state = { date: null, activity: null };
+  const INVITE_EMAIL = 'nabbyafua@gmail.com'; // guest invited on the calendar event
 
   /* ---------- Screen 1: runaway No button ---------- */
   const noBtn = document.getElementById('noBtn');
@@ -359,22 +359,15 @@
     const pretty = d.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
     document.getElementById('sumDate').textContent = pretty;
     document.getElementById('sumAct').textContent = state.activity;
-    document.getElementById('gcal').href = buildGCalUrl(state.date, state.activity, '');
+    document.getElementById('gcal').href = buildGCalUrl(state.date, state.activity, INVITE_EMAIL);
     burstHearts(40);
     show(5);
-  });
-
-  /* ---------- invite email keeps the calendar link in sync ---------- */
-  const inviteEmail = document.getElementById('inviteEmail');
-  inviteEmail.addEventListener('input', function () {
-    document.getElementById('gcal').href = buildGCalUrl(state.date, state.activity, inviteEmail.value.trim());
   });
 
   /* ---------- restart ---------- */
   document.getElementById('restart').addEventListener('click', function () {
     state.date = null; state.activity = null; dodges = 0;
     dateInput.value = '';
-    inviteEmail.value = '';
     grid.querySelectorAll('.opt').forEach(o => o.classList.remove('sel'));
     yesBtn.style.transform = '';
     noBtn.textContent = 'No';
