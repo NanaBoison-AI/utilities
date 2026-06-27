@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Will you go out with me? 💕</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --pink-deep: #e23b7d;
+    --pink: #ff6aa6;
+    --pink-soft: #ffd0e2;
+    --pink-bg1: #ffe9f2;
+    --pink-bg2: #ffd9ec;
+    --ink: #4a3b44;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body { height: 100%; margin: 0; }
+
+  body {
+    font-family: 'Quicksand', system-ui, sans-serif;
+    color: var(--ink);
+    background: linear-gradient(160deg, var(--pink-bg1), var(--pink-bg2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100dvh;
+    padding: 20px;
+    overflow: hidden;
+  }
+
+  .card {
+    position: relative;
+    width: min(440px, 92vw);
+    min-height: 520px;
+    background: #fff;
+    border-radius: 32px;
+    box-shadow: 0 30px 60px -20px rgba(226, 59, 125, 0.35),
+                0 0 0 1px rgba(255, 106, 166, 0.12) inset;
+    padding: 44px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .screen { display: none; width: 100%; animation: pop .5s ease both; }
+  .screen.active { display: flex; flex-direction: column; align-items: center; }
+
+  @keyframes pop {
+    from { opacity: 0; transform: translateY(14px) scale(.97); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  .emoji-row { font-size: 38px; letter-spacing: 8px; margin-bottom: 6px; }
+
+  h1 {
+    font-family: 'Pacifico', cursive;
+    color: var(--pink-deep);
+    font-weight: 400;
+    line-height: 1.1;
+    margin: 10px 0 6px;
+    text-shadow: 0 2px 0 var(--pink-soft);
+  }
+  .big { font-size: clamp(34px, 9vw, 46px); }
+  .med { font-size: clamp(28px, 7.5vw, 38px); }
+
+  p.sub { font-size: 16px; color: #8a6c79; margin: 4px 0 26px; font-weight: 600; }
+
+  /* Buttons */
+  .btn {
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    border: none;
+    cursor: pointer;
+    border-radius: 999px;
+    padding: 15px 34px;
+    transition: transform .15s ease, box-shadow .2s ease, background .2s;
+  }
+  .btn-yes {
+    background: linear-gradient(135deg, var(--pink), var(--pink-deep));
+    color: #fff;
+    box-shadow: 0 10px 22px -6px rgba(226, 59, 125, 0.6);
+  }
+  .btn-yes:hover { transform: translateY(-2px) scale(1.04); }
+  .btn-yes:active { transform: scale(.98); }
+
+  .btn-ghost {
+    background: #fdeef4;
+    color: #b06384;
+    box-shadow: 0 4px 10px -4px rgba(176, 99, 132, 0.3);
+  }
+
+  .choice-row {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 14px;
+    min-height: 64px;
+    position: relative;
+    width: 100%;
+  }
+
+  /* The runaway No button */
+  #noBtn {
+    background: #f3f4f6;
+    color: #9aa0a6;
+    box-shadow: 0 4px 10px -4px rgba(0,0,0,.15);
+    position: relative;
+    z-index: 2;
+  }
+  #noBtn.loose { position: fixed; margin: 0; z-index: 50; }
+
+  /* Date picker */
+  .date-wrap {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    align-items: center;
+    margin-top: 10px;
+  }
+  input[type="date"] {
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--ink);
+    border: 2px solid var(--pink-soft);
+    background: #fff7fb;
+    border-radius: 16px;
+    padding: 14px 18px;
+    width: 100%;
+    text-align: center;
+    outline: none;
+  }
+  input[type="date"]:focus { border-color: var(--pink); }
+
+  /* Activity grid */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+    margin: 6px 0 22px;
+  }
+  .opt {
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    background: #fff;
+    border: 2px solid var(--pink-soft);
+    border-radius: 16px;
+    padding: 16px 10px;
+    cursor: pointer;
+    transition: all .15s ease;
+    color: var(--ink);
+  }
+  .opt:hover { border-color: var(--pink); transform: translateY(-2px); }
+  .opt.sel {
+    background: linear-gradient(135deg, #fff0f6, #ffe0ee);
+    border-color: var(--pink-deep);
+    box-shadow: 0 8px 18px -8px rgba(226,59,125,.5);
+  }
+
+  .summary {
+    background: #fff7fb;
+    border: 2px dashed var(--pink-soft);
+    border-radius: 18px;
+    padding: 18px;
+    width: 100%;
+    margin-bottom: 22px;
+    font-weight: 600;
+  }
+  .summary b { color: var(--pink-deep); }
+  .summary .line { margin: 6px 0; }
+
+  .float-hearts { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 40; }
+  .fh {
+    position: absolute;
+    font-size: 22px;
+    animation: rise linear forwards;
+    opacity: .9;
+  }
+  @keyframes rise {
+    from { transform: translateY(0) scale(.6); opacity: .9; }
+    to   { transform: translateY(-110vh) scale(1.2); opacity: 0; }
+  }
+
+  .credit { position: fixed; bottom: 10px; width: 100%; text-align: center; left: 0;
+            font-size: 12px; color: #d98bb0; font-weight: 600; }
+</style>
+</head>
+<body>
+  <div class="card" id="card">
+
+    <!-- Screen 1: Proposal -->
+    <section class="screen active" id="s1">
+      <div class="emoji-row">💌💕</div>
+      <h1 class="big">Will you go<br/>out with me?</h1>
+      <div class="choice-row" id="choiceRow">
+        <button class="btn btn-yes" id="yesBtn">Yes</button>
+        <button class="btn btn-ghost" id="noBtn">No</button>
+      </div>
+    </section>
+
+    <!-- Screen 2: Yay -->
+    <section class="screen" id="s2">
+      <div class="emoji-row">💖✨💖</div>
+      <h1 class="big">Yay!</h1>
+      <p class="sub">I'm so glad you said yes.</p>
+      <button class="btn btn-yes" data-go="3">Press to continue</button>
+    </section>
+
+    <!-- Screen 3: Pick a date -->
+    <section class="screen" id="s3">
+      <div class="emoji-row">📅💜</div>
+      <h1 class="med">Pick a date</h1>
+      <p class="sub">Choose the day for our cute little plan.</p>
+      <div class="date-wrap">
+        <input type="date" id="dateInput" />
+        <button class="btn btn-yes" id="dateContinue">Continue</button>
+      </div>
+    </section>
+
+    <!-- Screen 4: Activity -->
+    <section class="screen" id="s4">
+      <div class="emoji-row">🍿🍝🌸</div>
+      <h1 class="med">What would you<br/>like to do?</h1>
+      <div class="grid" id="grid">
+        <button class="opt">Dinner date 🍽️</button>
+        <button class="opt">Movie night 🍿</button>
+        <button class="opt">Coffee &amp; walk ☕</button>
+        <button class="opt">Picnic 🌸</button>
+        <button class="opt">Mini golf ⛳</button>
+        <button class="opt">Surprise me 🎁</button>
+      </div>
+      <button class="btn btn-yes" id="lockIn">Lock it in</button>
+    </section>
+
+    <!-- Screen 5: Confirmed -->
+    <section class="screen" id="s5">
+      <div class="emoji-row">💗🎉💗</div>
+      <h1 class="med">It's a date!</h1>
+      <div class="summary">
+        <div class="line">📆 <b id="sumDate">—</b></div>
+        <div class="line">✨ <b id="sumAct">—</b></div>
+      </div>
+      <p class="sub" style="margin-bottom:18px">Can't wait to see you. 🥹</p>
+      <button class="btn btn-ghost" id="restart">Start over</button>
+    </section>
+
+  </div>
+
+  <div class="float-hearts" id="hearts"></div>
+  <div class="credit">made with 💕</div>
+
+<script>
+  const screens = {
+    1: document.getElementById('s1'),
+    2: document.getElementById('s2'),
+    3: document.getElementById('s3'),
+    4: document.getElementById('s4'),
+    5: document.getElementById('s5'),
+  };
+  function show(n) {
+    Object.values(screens).forEach(s => s.classList.remove('active'));
+    screens[n].classList.add('active');
+  }
+
+  const state = { date: null, activity: null };
+
+  /* ---------- Screen 1: runaway No button ---------- */
+  const noBtn = document.getElementById('noBtn');
+  const yesBtn = document.getElementById('yesBtn');
+  const card = document.getElementById('card');
+  let dodges = 0;
+
+  function moveNo() {
+    dodges++;
+    // detach to fixed positioning so it can roam the whole viewport
+    if (!noBtn.classList.contains('loose')) {
+      noBtn.classList.add('loose');
+    }
+    const pad = 12;
+    const w = noBtn.offsetWidth, h = noBtn.offsetHeight;
+    const maxX = window.innerWidth - w - pad;
+    const maxY = window.innerHeight - h - pad;
+    const x = Math.max(pad, Math.random() * maxX);
+    const y = Math.max(pad, Math.random() * maxY);
+    noBtn.style.left = x + 'px';
+    noBtn.style.top = y + 'px';
+    // make Yes more tempting each dodge
+    const scale = Math.min(1 + dodges * 0.12, 2.2);
+    yesBtn.style.transform = 'scale(' + scale + ')';
+    // playful taunts
+    const taunts = ['No', 'Nope!', 'Try again 😏', 'Catch me!', 'Nuh uh', 'Too slow!', 'Really? 🙃'];
+    noBtn.textContent = taunts[Math.min(dodges, taunts.length - 1)];
+  }
+
+  noBtn.addEventListener('mouseover', moveNo);
+  noBtn.addEventListener('mousedown', moveNo);
+  noBtn.addEventListener('touchstart', function (e) { e.preventDefault(); moveNo(); }, { passive: false });
+  noBtn.addEventListener('click', function (e) { e.preventDefault(); moveNo(); });
+
+  yesBtn.addEventListener('click', function () {
+    noBtn.classList.remove('loose');
+    noBtn.style.cssText = '';
+    burstHearts(28);
+    show(2);
+  });
+
+  /* ---------- continue buttons ---------- */
+  document.querySelectorAll('[data-go]').forEach(b => {
+    b.addEventListener('click', () => show(parseInt(b.dataset.go, 10)));
+  });
+
+  /* ---------- Screen 3: date ---------- */
+  const dateInput = document.getElementById('dateInput');
+  const today = new Date();
+  dateInput.min = today.toISOString().split('T')[0];
+  document.getElementById('dateContinue').addEventListener('click', function () {
+    if (!dateInput.value) {
+      dateInput.style.borderColor = '#e23b7d';
+      dateInput.focus();
+      return;
+    }
+    state.date = dateInput.value;
+    show(4);
+  });
+
+  /* ---------- Screen 4: activity ---------- */
+  const grid = document.getElementById('grid');
+  grid.addEventListener('click', function (e) {
+    const opt = e.target.closest('.opt');
+    if (!opt) return;
+    grid.querySelectorAll('.opt').forEach(o => o.classList.remove('sel'));
+    opt.classList.add('sel');
+    state.activity = opt.textContent.trim();
+  });
+  document.getElementById('lockIn').addEventListener('click', function () {
+    if (!state.activity) {
+      // gently nudge: flash the grid
+      grid.animate([{ transform: 'translateX(-6px)' }, { transform: 'translateX(6px)' }, { transform: 'none' }], { duration: 250 });
+      return;
+    }
+    const d = new Date(state.date + 'T00:00:00');
+    const pretty = d.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+    document.getElementById('sumDate').textContent = pretty;
+    document.getElementById('sumAct').textContent = state.activity;
+    burstHearts(40);
+    show(5);
+  });
+
+  /* ---------- restart ---------- */
+  document.getElementById('restart').addEventListener('click', function () {
+    state.date = null; state.activity = null; dodges = 0;
+    dateInput.value = '';
+    grid.querySelectorAll('.opt').forEach(o => o.classList.remove('sel'));
+    yesBtn.style.transform = '';
+    noBtn.textContent = 'No';
+    show(1);
+  });
+
+  /* ---------- floating hearts ---------- */
+  const heartLayer = document.getElementById('hearts');
+  const HEARTS = ['💕','💖','💗','💞','🌸','✨','💘'];
+  function burstHearts(count) {
+    for (let i = 0; i < count; i++) {
+      const el = document.createElement('div');
+      el.className = 'fh';
+      el.textContent = HEARTS[Math.floor(Math.random() * HEARTS.length)];
+      el.style.left = Math.random() * 100 + 'vw';
+      el.style.bottom = '-30px';
+      el.style.fontSize = (16 + Math.random() * 22) + 'px';
+      const dur = 2.5 + Math.random() * 2.5;
+      el.style.animationDuration = dur + 's';
+      el.style.animationDelay = (Math.random() * 0.6) + 's';
+      heartLayer.appendChild(el);
+      setTimeout(() => el.remove(), (dur + 1) * 1000);
+    }
+  }
+</script>
+</body>
+</html>
