@@ -73,6 +73,9 @@
   .med { font-size: clamp(28px, 7.5vw, 38px); }
 
   p.sub { font-size: 16px; color: #8a6c79; margin: 4px 0 26px; font-weight: 600; }
+  p.status { font-size: 14px; font-weight: 600; min-height: 18px; margin: 12px 0 0; }
+  p.status.err { color: #e23b7d; }
+  p.status.ok { color: #2e9e6b; }
 
   /* Buttons */
   .btn {
@@ -245,7 +248,9 @@
         <button class="opt">Mini golf ⛳</button>
         <button class="opt">Surprise me 🎁</button>
       </div>
+      <input type="email" id="userEmail" placeholder="Your email 💌" autocomplete="email" required style="margin-bottom:14px" />
       <button class="btn btn-yes" id="lockIn">Lock it in</button>
+      <p class="status" id="submitStatus"></p>
     </section>
 
     <!-- Screen 5: Confirmed -->
@@ -256,7 +261,7 @@
         <div class="line">📆 <b id="sumDate">—</b></div>
         <div class="line">✨ <b id="sumAct">—</b></div>
       </div>
-      <p class="sub" style="margin-bottom:18px">Can't wait to see you. 🥹</p>
+      <p class="sub" style="margin-bottom:18px">A confirmation is on its way to your inbox. Can't wait to see you. 🥹</p>
       <a class="btn btn-yes" id="gcal" href="#" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block;margin-bottom:12px">📅 Add to Google Calendar</a>
     </section>
 
@@ -278,8 +283,10 @@
     screens[n].classList.add('active');
   }
 
-  const state = { date: null, activity: null };
+  const state = { date: null, activity: null, email: null };
   const INVITE_EMAIL = 'nabbyafua@gmail.com'; // guest invited on the calendar event
+  // Paste the deployed Google Apps Script web-app URL here (see apps-script/README.md).
+  const APPS_SCRIPT_URL = 'PASTE_YOUR_WEB_APP_URL_HERE';
 
   /* ---------- Screen 1: runaway No button (bounces + dodges cursor) ---------- */
   const noBtn = document.getElementById('noBtn');
@@ -418,12 +425,46 @@
     opt.classList.add('sel');
     state.activity = opt.textContent.trim();
   });
-  document.getElementById('lockIn').addEventListener('click', function () {
+  const userEmail = document.getElementById('userEmail');
+  const lockIn = document.getElementById('lockIn');
+  const submitStatus = document.getElementById('submitStatus');
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  function setStatus(msg, kind) {
+    submitStatus.textContent = msg || '';
+    submitStatus.className = 'status' + (kind ? ' ' + kind : '');
+  }
+
+  lockIn.addEventListener('click', async function () {
     if (!state.activity) {
       // gently nudge: flash the grid
       grid.animate([{ transform: 'translateX(-6px)' }, { transform: 'translateX(6px)' }, { transform: 'none' }], { duration: 250 });
+      setStatus('Pick something to do first 🙂', 'err');
       return;
     }
+    const email = userEmail.value.trim();
+    if (!EMAIL_RE.test(email)) {
+      userEmail.style.borderColor = '#e23b7d';
+      userEmail.focus();
+      setStatus('Please enter a valid email so we can confirm 💌', 'err');
+      return;
+    }
+    state.email = email;
+
+    lockIn.disabled = true;
+    setStatus('Locking it in… 💕', null);
+    try {
+      await submitBooking({ date: state.date, activity: state.activity, email: email });
+      setStatus('', null);
+      goToConfirmation();
+    } catch (err) {
+      setStatus("Couldn't send the confirmation — please try again.", 'err');
+    } finally {
+      lockIn.disabled = false;
+    }
+  });
+
+  function goToConfirmation() {
     const d = new Date(state.date + 'T00:00:00');
     const pretty = d.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
     document.getElementById('sumDate').textContent = pretty;
@@ -431,6 +472,29 @@
     document.getElementById('gcal').href = buildGCalUrl(state.date, state.activity, INVITE_EMAIL);
     burstHearts(40);
     show(5);
+  }
+
+  // POST the booking to the Apps Script web app, which writes to the sheet
+  // and emails both the owner and the user via MailApp.
+  function submitBooking(payload) {
+    if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf('PASTE_YOUR_WEB_APP_URL') === 0) {
+      // Not configured yet — don't block the happy path during local testing.
+      console.warn('APPS_SCRIPT_URL is not set; skipping backend submit.');
+      return Promise.resolve();
+    }
+    // text/plain keeps this a "simple" request (no CORS preflight, which the
+    // Apps Script web app does not answer). The script parses the JSON body.
+    return fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload),
+    }).then(function () { /* opaque response with no-cors; assume success */ });
+  }
+
+  userEmail.addEventListener('input', function () {
+    userEmail.style.borderColor = '';
+    if (submitStatus.classList.contains('err')) setStatus('', null);
   });
 
   /* ---------- Google Calendar link ---------- */
