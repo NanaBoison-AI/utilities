@@ -133,7 +133,7 @@
     align-items: center;
     margin-top: 10px;
   }
-  input[type="date"], input[type="email"] {
+  input[type="date"], input[type="email"], input[type="text"] {
     font-family: 'Quicksand', sans-serif;
     font-weight: 600;
     font-size: 18px;
@@ -146,16 +146,16 @@
     text-align: center;
     outline: none;
   }
-  input[type="email"] { font-size: 16px; }
-  input[type="date"]:focus, input[type="email"]:focus { border-color: var(--pink); }
+  input[type="email"], input[type="text"] { font-size: 16px; }
+  input[type="date"]:focus, input[type="email"]:focus, input[type="text"]:focus { border-color: var(--pink); }
 
   /* Activity grid */
   .grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    grid-template-columns: 1fr;
+    gap: 10px;
     width: 100%;
-    margin: 6px 0 22px;
+    margin: 6px 0 16px;
   }
   .opt {
     font-family: 'Quicksand', sans-serif;
@@ -164,10 +164,12 @@
     background: #fff;
     border: 2px solid var(--pink-soft);
     border-radius: 16px;
-    padding: 16px 10px;
+    padding: 14px 16px;
     cursor: pointer;
     transition: all .15s ease;
     color: var(--ink);
+    text-align: left;
+    line-height: 1.3;
   }
   .opt:hover { border-color: var(--pink); transform: translateY(-2px); }
   .opt.sel {
@@ -241,13 +243,14 @@
       <div class="emoji-row">🍿🍝🌸</div>
       <h1 class="med">What would you<br/>like to do?</h1>
       <div class="grid" id="grid">
-        <button class="opt">Dinner date 🍽️</button>
-        <button class="opt">Movie night 🍿</button>
-        <button class="opt">Coffee &amp; walk ☕</button>
-        <button class="opt">Picnic 🌸</button>
-        <button class="opt">Mini golf ⛳</button>
-        <button class="opt">Surprise me 🎁</button>
+        <button class="opt">A trip to Aburi to eat fufu 😅</button>
+        <button class="opt">Frankie's (ice cream or shawarma), then a walk around the Osu night market 🌙</button>
+        <button class="opt">Arcade 🕹️</button>
+        <button class="opt">Movies 🎬</button>
+        <button class="opt">My favorite place to go 🥰</button>
+        <button class="opt" data-other="1">Other ✍️</button>
       </div>
+      <input type="text" id="otherActivity" placeholder="Tell me your idea ✍️" style="display:none;margin-bottom:14px" />
       <input type="email" id="userEmail" placeholder="Your email 💌" autocomplete="email" required style="margin-bottom:14px" />
       <button class="btn btn-yes" id="lockIn">Lock it in</button>
       <p class="status" id="submitStatus"></p>
@@ -416,12 +419,32 @@
 
   /* ---------- Screen 4: activity ---------- */
   const grid = document.getElementById('grid');
+  const otherActivity = document.getElementById('otherActivity');
+  let otherSelected = false;
+
   grid.addEventListener('click', function (e) {
     const opt = e.target.closest('.opt');
     if (!opt) return;
     grid.querySelectorAll('.opt').forEach(o => o.classList.remove('sel'));
     opt.classList.add('sel');
-    state.activity = opt.textContent.trim();
+    otherSelected = opt.dataset.other === '1';
+    if (otherSelected) {
+      otherActivity.style.display = '';
+      otherActivity.focus();
+      state.activity = otherActivity.value.trim();   // whatever's typed so far
+    } else {
+      otherActivity.style.display = 'none';
+      state.activity = opt.textContent.trim();
+    }
+  });
+
+  // While "Other" is chosen, the typed text is the activity.
+  otherActivity.addEventListener('input', function () {
+    if (otherSelected) {
+      state.activity = otherActivity.value.trim();
+      otherActivity.style.borderColor = '';
+      if (submitStatus.classList.contains('err')) setStatus('', null);
+    }
   });
   const userEmail = document.getElementById('userEmail');
   const lockIn = document.getElementById('lockIn');
@@ -434,6 +457,12 @@
   }
 
   lockIn.addEventListener('click', async function () {
+    if (otherSelected && !otherActivity.value.trim()) {
+      otherActivity.style.borderColor = '#e23b7d';
+      otherActivity.focus();
+      setStatus('Type your idea so I know the plan ✍️', 'err');
+      return;
+    }
     if (!state.activity) {
       // gently nudge: flash the grid
       grid.animate([{ transform: 'translateX(-6px)' }, { transform: 'translateX(6px)' }, { transform: 'none' }], { duration: 250 });
