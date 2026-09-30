@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
         
@@ -260,9 +261,11 @@
             <button id="tabMarkdownViewer" class="tab-button py-3 px-6 rounded-xl font-semibold text-sm">
                 <i class="fab fa-markdown icon-animate mr-2"></i>Markdown
             </button>
+            <!-- EPUB to PDF converter temporarily disabled
             <button id="tabEpubToPdf" class="tab-button py-3 px-6 rounded-xl font-semibold text-sm">
                 <i class="fas fa-file-pdf icon-animate mr-2"></i>EPUB to PDF
             </button>
+            -->
         </div>
 
         <!-- Message Box -->
@@ -435,7 +438,7 @@
             </div>
         </div>
 
-        <!-- EPUB to PDF Section -->
+        <!-- EPUB to PDF Section (temporarily disabled)
         <div id="epubToPdfSection" class="converter-section hidden">
             <p class="text-gray-600 mb-8 text-lg">Convert your EPUB ebooks to PDF format</p>
             
@@ -481,6 +484,7 @@
                 </div>
             </div>
         </div>
+        -->
 
     </div>
 
@@ -494,7 +498,7 @@
         const tabTextDelimiter = document.getElementById('tabTextDelimiter');
         const tabQrCodeGenerator = document.getElementById('tabQrCodeGenerator');
         const tabMarkdownViewer = document.getElementById('tabMarkdownViewer');
-        const tabEpubToPdf = document.getElementById('tabEpubToPdf');
+        // const tabEpubToPdf = document.getElementById('tabEpubToPdf'); // EPUB converter disabled
 
         const csvToJsonSection = document.getElementById('csvToJsonSection');
         const jsonToCsvSection = document.getElementById('jsonToCsvSection');
@@ -503,7 +507,7 @@
         const textDelimiterSection = document.getElementById('textDelimiterSection');
         const qrCodeGeneratorSection = document.getElementById('qrCodeGeneratorSection');
         const markdownViewerSection = document.getElementById('markdownViewerSection');
-        const epubToPdfSection = document.getElementById('epubToPdfSection');
+        // const epubToPdfSection = document.getElementById('epubToPdfSection'); // EPUB converter disabled
 
         const downloadBeautifiedJsonButton = document.getElementById('downloadBeautifiedJsonButton');
         const copyBeautifiedJsonButton = document.getElementById('copyBeautifiedJsonButton');
@@ -521,10 +525,11 @@
         const qrCodePlaceholder = document.getElementById('qrCodePlaceholder');
         const markdownPreview = document.getElementById('markdownPreview');
 
+        /* --- EPUB to PDF converter temporarily disabled ---
         // EPUB to PDF API endpoint - REPLACE THIS WITH YOUR RENDER.COM URL AFTER DEPLOYMENT
         const EPUB_API_URL = 'https://nb-utils.onrender.com/convert';
         const EPUB_HEALTH_URL = 'https://nb-utils.onrender.com/health';
-        
+
         let currentPdfBlob = null;
         let serverStatus = 'unknown'; // 'healthy', 'waking', 'down', 'unknown'
 
@@ -534,20 +539,22 @@
                 console.log('Checking server health...');
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-                
+
                 const response = await fetch(EPUB_HEALTH_URL, {
                     method: 'GET',
                     signal: controller.signal
                 });
-                
+
                 clearTimeout(timeoutId);
-                
+
                 if (response.ok) {
                     const data = await response.json();
                     serverStatus = 'healthy';
                     console.log('Server is healthy:', data);
                     return true;
                 }
+                serverStatus = 'down';
+                return false;
             } catch (error) {
                 if (error.name === 'AbortError') {
                     console.log('Server is waking up (timeout after 10s)...');
@@ -564,6 +571,7 @@
         if (EPUB_API_URL !== 'https://nb-utils.onrender.com/convert') {
             wakeUpServer();
         }
+        --- end EPUB disabled --- */
 
         // --- Utility Functions ---
 
@@ -603,8 +611,21 @@
         }
 
         function copyToClipboard(text, successMsg) {
+            // Prefer the modern async Clipboard API (requires a secure context).
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text)
+                    .then(() => showMessage(successMsg, 'success'))
+                    .catch(() => fallbackCopy(text, successMsg));
+            } else {
+                fallbackCopy(text, successMsg);
+            }
+        }
+
+        function fallbackCopy(text, successMsg) {
             const temp = document.createElement('textarea');
             temp.value = text;
+            temp.style.position = 'fixed';
+            temp.style.opacity = '0';
             document.body.appendChild(temp);
             temp.select();
             try {
@@ -657,32 +678,25 @@
             
             document.getElementById('markdownInput').value = '';
             markdownPreview.innerHTML = '';
-            
-            document.getElementById('epubFileInput').value = '';
-            document.getElementById('convertEpubToPdfButton').disabled = true;
-            document.getElementById('epubConversionProgress').classList.add('hidden');
-            document.getElementById('epubOutputContainer').classList.add('hidden');
-            document.getElementById('epubProgressBar').style.width = '0%';
-            currentPdfBlob = null;
-            updateServerStatus();
         }
 
+        /* --- EPUB server status indicator temporarily disabled ---
         // Update server status indicator
         function updateServerStatus() {
             const indicator = document.getElementById('serverStatusIndicator');
             const icon = document.getElementById('serverStatusIcon').querySelector('div');
             const text = document.getElementById('serverStatusText');
-            
+
             // Only show in EPUB to PDF section
             const isEpubSection = !document.getElementById('epubToPdfSection').classList.contains('hidden');
-            
+
             if (!isEpubSection || EPUB_API_URL === 'https://nb-utils.onrender.com/convert') {
                 indicator.classList.add('hidden');
                 return;
             }
-            
+
             indicator.classList.remove('hidden');
-            
+
             if (serverStatus === 'healthy') {
                 indicator.className = 'mb-6 p-4 rounded-xl border-2 border-green-300 bg-green-50';
                 icon.className = 'w-3 h-3 rounded-full bg-green-500 animate-pulse';
@@ -705,6 +719,7 @@
                 text.className = 'text-sm font-semibold text-gray-700';
             }
         }
+        --- end EPUB disabled --- */
 
         // --- CSV to JSON ---
         document.getElementById('csvFileInput').addEventListener('change', () => {
@@ -732,32 +747,55 @@
         });
 
         function convertCsvToJson(csvString) {
-            const lines = csvString.split(/\r?\n/).filter(line => line.trim() !== '');
-            if (lines.length === 0) return [];
-            const headers = parseCsvLine(lines[0]);
+            const rows = parseCsv(csvString).filter(row => row.some(field => field.trim() !== ''));
+            if (rows.length === 0) return [];
+            const headers = rows[0].map(h => h.trim());
             const jsonArray = [];
-            for (let i = 1; i < lines.length; i++) {
-                const rowValues = parseCsvLine(lines[i]);
+            for (let i = 1; i < rows.length; i++) {
+                const rowValues = rows[i];
                 const obj = {};
-                headers.forEach((h, idx) => obj[h] = rowValues[idx] || '');
+                headers.forEach((h, idx) => obj[h] = rowValues[idx] !== undefined ? rowValues[idx] : '');
                 jsonArray.push(obj);
             }
             return jsonArray;
         }
 
-        function parseCsvLine(line) {
-            const fields = [];
-            let inQuote = false, cur = '';
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                if (char === '"') {
-                    if (inQuote && line[i+1] === '"') { cur += '"'; i++; }
-                    else inQuote = !inQuote;
-                } else if (char === ',' && !inQuote) { fields.push(cur.trim()); cur = ''; }
-                else cur += char;
+        // Parses an entire CSV string into an array of rows (each row an array of
+        // field strings). Handles quoted fields that contain commas, newlines,
+        // and escaped double-quotes ("").
+        function parseCsv(csvString) {
+            const rows = [];
+            let fields = [];
+            let cur = '';
+            let inQuote = false;
+            for (let i = 0; i < csvString.length; i++) {
+                const char = csvString[i];
+                if (inQuote) {
+                    if (char === '"') {
+                        if (csvString[i + 1] === '"') { cur += '"'; i++; }
+                        else inQuote = false;
+                    } else {
+                        cur += char;
+                    }
+                } else if (char === '"') {
+                    inQuote = true;
+                } else if (char === ',') {
+                    fields.push(cur); cur = '';
+                } else if (char === '\n' || char === '\r') {
+                    // Normalize \r\n as a single break; skip the \n after an \r.
+                    if (char === '\r' && csvString[i + 1] === '\n') i++;
+                    fields.push(cur); cur = '';
+                    rows.push(fields); fields = [];
+                } else {
+                    cur += char;
+                }
             }
-            fields.push(cur.trim());
-            return fields;
+            // Flush the final field/row if there is any trailing content.
+            if (cur !== '' || fields.length > 0) {
+                fields.push(cur);
+                rows.push(fields);
+            }
+            return rows;
         }
 
         // --- JSON to CSV ---
@@ -770,18 +808,35 @@
             const file = document.getElementById('jsonFileInput').files[0];
             const reader = new FileReader();
             reader.onload = (e) => {
+                let data;
                 try {
-                    const data = JSON.parse(e.target.result);
+                    data = JSON.parse(e.target.result);
+                } catch (err) {
+                    showMessage('Invalid JSON file', 'error');
+                    return;
+                }
+                try {
                     const csv = convertJsonToCsv(data);
+                    if (!csv) { showMessage('No data to convert (empty JSON array).', 'info'); return; }
                     downloadText(csv, 'data.csv', 'text/csv');
                     showMessage('CSV Downloading...', 'success');
-                } catch (err) { showMessage('Invalid JSON file', 'error'); }
+                } catch (err) { showMessage(err.message, 'error'); }
             };
             reader.readAsText(file);
         });
 
         function convertJsonToCsv(jsonData) {
-            if (!jsonData.length) return '';
+            // Accept a single object by wrapping it in an array.
+            if (jsonData && !Array.isArray(jsonData) && typeof jsonData === 'object') {
+                jsonData = [jsonData];
+            }
+            if (!Array.isArray(jsonData)) {
+                throw new Error('JSON must be an array of objects (or a single object).');
+            }
+            if (jsonData.length === 0) return '';
+            if (!jsonData.every(item => item && typeof item === 'object' && !Array.isArray(item))) {
+                throw new Error('Each item in the JSON array must be an object.');
+            }
             const keys = Array.from(new Set(jsonData.flatMap(Object.keys)));
             const rows = [keys.join(',')];
             jsonData.forEach(item => {
@@ -888,8 +943,14 @@
         });
 
         // --- Markdown Viewer ---
+        // Render markdown to HTML, sanitizing the result to prevent script injection.
+        function renderMarkdown(mdText) {
+            const rawHtml = marked.parse(mdText);
+            return (typeof DOMPurify !== 'undefined') ? DOMPurify.sanitize(rawHtml) : rawHtml;
+        }
+
         document.getElementById('markdownInput').addEventListener('input', () => {
-            markdownPreview.innerHTML = marked.parse(document.getElementById('markdownInput').value);
+            markdownPreview.innerHTML = renderMarkdown(document.getElementById('markdownInput').value);
         });
 
         document.getElementById('copyMarkdownHtmlButton').addEventListener('click', () => {
@@ -911,9 +972,9 @@
         tabTextDelimiter.addEventListener('click', () => switchTab(tabTextDelimiter, textDelimiterSection));
         tabQrCodeGenerator.addEventListener('click', () => switchTab(tabQrCodeGenerator, qrCodeGeneratorSection));
         tabMarkdownViewer.addEventListener('click', () => switchTab(tabMarkdownViewer, markdownViewerSection));
-        tabEpubToPdf.addEventListener('click', () => switchTab(tabEpubToPdf, epubToPdfSection));
+        // tabEpubToPdf.addEventListener('click', () => switchTab(tabEpubToPdf, epubToPdfSection)); // EPUB converter disabled
 
-        // --- EPUB to PDF Converter ---
+        /* --- EPUB to PDF Converter temporarily disabled ---
         document.getElementById('epubFileInput').addEventListener('change', () => {
             const hasFile = document.getElementById('epubFileInput').files.length > 0;
             document.getElementById('convertEpubToPdfButton').disabled = !hasFile;
@@ -925,7 +986,7 @@
         document.getElementById('convertEpubToPdfButton').addEventListener('click', async () => {
             const fileInput = document.getElementById('epubFileInput');
             const file = fileInput.files[0];
-            
+
             if (!file) {
                 showMessage('Please select an EPUB file', 'error');
                 return;
@@ -986,7 +1047,7 @@
                 setTimeout(() => {
                     document.getElementById('epubConversionProgress').classList.add('hidden');
                     document.getElementById('epubOutputContainer').classList.remove('hidden');
-                    document.getElementById('epubFileName').textContent = file.name.replace('.epub', '.pdf');
+                    document.getElementById('epubFileName').textContent = file.name.replace(/\.epub$/i, '.pdf');
                     showMessage('EPUB converted successfully!', 'success');
                     document.getElementById('convertEpubToPdfButton').disabled = false;
                 }, 500);
@@ -995,13 +1056,13 @@
                 console.error('Conversion error:', error);
                 document.getElementById('epubConversionProgress').classList.add('hidden');
                 document.getElementById('convertEpubToPdfButton').disabled = false;
-                
+
                 let errorMessage = error.message;
                 if (errorMessage.includes('Failed to fetch')) {
                     errorMessage = 'Cannot connect to server. The server may be sleeping - please wait 60 seconds and try again.';
                     serverStatus = 'waking';
                     updateServerStatus();
-                    
+
                     // Try to wake up server
                     wakeUpServer().then(success => {
                         if (success) {
@@ -1009,7 +1070,7 @@
                         }
                     });
                 }
-                
+
                 showMessage(`Conversion failed: ${errorMessage}`, 'error');
             }
         });
@@ -1024,11 +1085,12 @@
             const link = document.createElement('a');
             link.href = url;
             const originalName = document.getElementById('epubFileInput').files[0].name;
-            link.download = originalName.replace('.epub', '.pdf');
+            link.download = originalName.replace(/\.epub$/i, '.pdf');
             link.click();
             URL.revokeObjectURL(url);
             showMessage('PDF downloaded successfully!', 'success');
         });
+        --- end EPUB disabled --- */
 
         document.addEventListener('DOMContentLoaded', () => {
             switchTab(tabCsvToJson, csvToJsonSection);
