@@ -358,13 +358,54 @@
         }
         .chip:hover { color: var(--text); border-color: var(--border-strong); }
         .chip.active { color: var(--blue); border-color: rgba(96,165,250,0.5); background: rgba(59,130,246,0.10); }
-        .delim-options {
+        .ws-options {
             display: flex; flex-wrap: wrap; align-items: center; gap: 10px 26px;
             margin-top: 18px; font-size: 13px; color: var(--muted);
         }
         .check { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
         .check input { width: 15px; height: 15px; accent-color: #6366f1; cursor: pointer; }
         .hint code { background: rgba(148,163,184,0.15); color: var(--text); padding: 1px 6px; border-radius: 5px; font-size: 12px; }
+
+        /* JSON Compare results */
+        .diff-summary { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+        .diff-pill {
+            font-size: 12px; font-weight: 600;
+            padding: 5px 12px; border-radius: 999px;
+            border: 1px solid var(--border);
+        }
+        .diff-pill.added   { color: var(--green); background: rgba(16,185,129,0.10); border-color: rgba(16,185,129,0.35); }
+        .diff-pill.removed { color: #f87171;      background: rgba(239,68,68,0.10);  border-color: rgba(239,68,68,0.35); }
+        .diff-pill.changed { color: var(--amber); background: rgba(245,158,11,0.10); border-color: rgba(245,158,11,0.35); }
+        .diff-pill.same    { color: var(--green); background: rgba(16,185,129,0.10); border-color: rgba(16,185,129,0.35); }
+        .diff-list { display: flex; flex-direction: column; gap: 6px; max-height: 520px; overflow-y: auto; }
+        .diff-empty { color: var(--muted); font-size: 14px; padding: 18px 4px; }
+        .diff-row {
+            display: grid; grid-template-columns: 84px minmax(0, 1fr) minmax(0, 1.4fr);
+            gap: 12px; align-items: start;
+            padding: 10px 12px; border-radius: 10px;
+            background: rgba(8,11,20,0.45);
+            border: 1px solid var(--border);
+            border-left-width: 3px;
+            font-size: 13px;
+        }
+        .diff-row.added   { border-left-color: var(--green); }
+        .diff-row.removed { border-left-color: #f87171; }
+        .diff-row.changed { border-left-color: var(--amber); }
+        .diff-tag { font-size: 11px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; padding-top: 2px; }
+        .diff-row.added .diff-tag   { color: var(--green); }
+        .diff-row.removed .diff-tag { color: #f87171; }
+        .diff-row.changed .diff-tag { color: var(--amber); }
+        .diff-path, .diff-val code {
+            font-family: 'SFMono-Regular', ui-monospace, Menlo, Consolas, monospace;
+            font-size: 12.5px; word-break: break-all;
+        }
+        .diff-path { color: var(--blue); }
+        .diff-val { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--muted-2); }
+        .diff-val code { color: var(--text); background: rgba(148,163,184,0.10); padding: 2px 7px; border-radius: 6px; }
+        .diff-val code.old { color: #fca5a5; text-decoration: line-through; text-decoration-color: rgba(248,113,113,0.5); }
+        @media (max-width: 720px) {
+            .diff-row { grid-template-columns: 1fr; gap: 6px; }
+        }
 
         /* Dropzone */
         .dropzone {
@@ -695,6 +736,43 @@
                     </div>
                 </div>
 
+                <!-- JSON Compare -->
+                <div class="tool-workspace" id="ws-json-compare">
+                    <div class="ws-head">
+                        <span class="icon-tile blue"><i class="fas fa-not-equal"></i></span>
+                        <div><h1>JSON Compare</h1><p>Compare two JSON documents and see exactly what changed.</p></div>
+                    </div>
+                    <div class="ws-grid">
+                        <div class="panel">
+                            <div class="panel-label"><span>Original (left)</span></div>
+                            <textarea class="field" id="compareLeftInput" placeholder='{"name":"John","age":30}'></textarea>
+                        </div>
+                        <div class="panel">
+                            <div class="panel-label"><span>Modified (right)</span></div>
+                            <textarea class="field" id="compareRightInput" placeholder='{"name":"John","age":31,"city":"Accra"}'></textarea>
+                        </div>
+                    </div>
+                    <div class="ws-options">
+                        <label class="check"><input type="checkbox" id="compareIgnoreOrderOption"> Ignore array order</label>
+                        <span class="hint">Object key order is always ignored.</span>
+                    </div>
+                    <div class="ws-actions">
+                        <button class="btn btn-primary" id="compareJsonButton"><i class="fas fa-not-equal"></i> Compare</button>
+                        <button class="btn btn-secondary" id="swapCompareButton"><i class="fas fa-exchange-alt"></i> Swap</button>
+                        <button class="btn btn-secondary" id="formatCompareButton"><i class="fas fa-align-left"></i> Format both</button>
+                    </div>
+                    <div class="panel" style="margin-top:24px;">
+                        <div class="panel-label">
+                            <span>Differences</span>
+                            <span class="mini-actions">
+                                <button class="btn-mini hidden" id="copyDiffReportButton"><i class="fas fa-copy"></i> Copy report</button>
+                            </span>
+                        </div>
+                        <div class="diff-summary" id="diffSummary"></div>
+                        <div class="diff-list" id="diffList"><p class="diff-empty">Paste two JSON documents and click Compare.</p></div>
+                    </div>
+                </div>
+
                 <!-- Delimiter Replacer -->
                 <div class="tool-workspace" id="ws-delimiter">
                     <div class="ws-head">
@@ -741,7 +819,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="delim-options">
+                    <div class="ws-options">
                         <label class="check"><input type="checkbox" id="delimTrimOption" checked> Trim spaces and skip empty items</label>
                         <label class="check"><input type="checkbox" id="delimTrailingOption"> Add delimiter after the last item</label>
                         <span class="hint">Tip: type <code>\n</code> for a new line and <code>\t</code> for a tab.</span>
@@ -825,6 +903,7 @@
             { id: 'json-to-csv', title: 'JSON to CSV', desc: 'Convert JSON data to CSV format with ease.', icon: 'fa-table', color: 'green' },
             { id: 'json-lint', title: 'JSON Lint & Beautify', desc: 'Validate and format your JSON for better readability.', icon: 'fa-code', color: 'purple' },
             { id: 'json-string', title: 'JSON to String / String to JSON', desc: 'Convert between JSON and string formats in seconds.', icon: 'fa-exchange-alt', color: 'amber' },
+            { id: 'json-compare', title: 'JSON Compare', desc: 'Compare two JSON documents and see exactly what changed.', icon: 'fa-not-equal', color: 'blue' },
             { id: 'delimiter', title: 'Delimiter Replacer', desc: 'Replace delimiters in your text with ease.', icon: 'fa-list', color: 'green' },
             { id: 'qr', title: 'QR Code Generator', desc: 'Create QR codes for your text, links or data.', icon: 'fa-qrcode', color: 'purple' },
             { id: 'markdown', title: 'Markdown Live Preview', desc: 'Write Markdown and see the result with HTML export.', icon: 'fa-markdown', color: 'green', brand: true },
@@ -1021,6 +1100,11 @@
             copyBeautifiedJsonButton.classList.add('hidden'); downloadBeautifiedJsonButton.classList.add('hidden');
 
             stringifyInput.value = ''; stringifyOutput.value = '';
+
+            document.getElementById('compareLeftInput').value = '';
+            document.getElementById('compareRightInput').value = '';
+            document.getElementById('compareIgnoreOrderOption').checked = false;
+            resetDiffResults();
             copyStringifyResultButton.classList.add('hidden');
 
             document.getElementById('textInputToReplace').value = '';
@@ -1213,6 +1297,176 @@
             } catch (err) { showMessage('Invalid escaped string or JSON.', 'error'); }
         });
         copyStringifyResultButton.addEventListener('click', () => copyToClipboard(stringifyOutput.value, 'Result copied to clipboard!'));
+
+        // ================= JSON Compare =================
+        const MAX_DIFF_ROWS = 500;
+        let lastDiffReport = '';
+
+        function jsonType(v) {
+            return v === null ? 'null' : Array.isArray(v) ? 'array' : typeof v;
+        }
+
+        // Stable string for any JSON value (object keys sorted) - used to match array items.
+        function canonicalJson(v) {
+            if (Array.isArray(v)) return '[' + v.map(canonicalJson).join(',') + ']';
+            if (v && typeof v === 'object') {
+                return '{' + Object.keys(v).sort().map(k => JSON.stringify(k) + ':' + canonicalJson(v[k])).join(',') + '}';
+            }
+            return JSON.stringify(v);
+        }
+
+        function childPath(path, key) {
+            return /^[A-Za-z_$][\w$]*$/.test(key) ? `${path}.${key}` : `${path}[${JSON.stringify(key)}]`;
+        }
+
+        // Walks both values and records every difference as { type, path, from, to }.
+        function diffJson(a, b, ignoreArrayOrder, path = '$', out = []) {
+            const ta = jsonType(a), tb = jsonType(b);
+            if (ta !== tb) {
+                out.push({ type: 'changed', path, from: a, to: b });
+            } else if (ta === 'object') {
+                const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+                for (const k of keys) {
+                    const p = childPath(path, k);
+                    const inA = Object.prototype.hasOwnProperty.call(a, k);
+                    const inB = Object.prototype.hasOwnProperty.call(b, k);
+                    if (!inA) out.push({ type: 'added', path: p, to: b[k] });
+                    else if (!inB) out.push({ type: 'removed', path: p, from: a[k] });
+                    else diffJson(a[k], b[k], ignoreArrayOrder, p, out);
+                }
+            } else if (ta === 'array' && ignoreArrayOrder) {
+                // Treat arrays as multisets: report items that have no identical match on the other side.
+                const remaining = new Map();
+                b.forEach((item, i) => {
+                    const key = canonicalJson(item);
+                    if (!remaining.has(key)) remaining.set(key, []);
+                    remaining.get(key).push(i);
+                });
+                a.forEach((item, i) => {
+                    const matches = remaining.get(canonicalJson(item));
+                    if (matches && matches.length) matches.shift();
+                    else out.push({ type: 'removed', path: `${path}[${i}]`, from: item });
+                });
+                for (const indexes of remaining.values()) {
+                    indexes.forEach(i => out.push({ type: 'added', path: `${path}[${i}]`, to: b[i] }));
+                }
+            } else if (ta === 'array') {
+                const n = Math.max(a.length, b.length);
+                for (let i = 0; i < n; i++) {
+                    const p = `${path}[${i}]`;
+                    if (i >= a.length) out.push({ type: 'added', path: p, to: b[i] });
+                    else if (i >= b.length) out.push({ type: 'removed', path: p, from: a[i] });
+                    else diffJson(a[i], b[i], ignoreArrayOrder, p, out);
+                }
+            } else if (a !== b) {
+                out.push({ type: 'changed', path, from: a, to: b });
+            }
+            return out;
+        }
+
+        function previewJson(v) {
+            const s = JSON.stringify(v);
+            return s.length > 160 ? s.slice(0, 157) + '...' : s;
+        }
+
+        function makeEl(tag, className, text) {
+            const el = document.createElement(tag);
+            if (className) el.className = className;
+            if (text !== undefined) el.textContent = text;
+            return el;
+        }
+
+        function resetDiffResults() {
+            lastDiffReport = '';
+            document.getElementById('diffSummary').innerHTML = '';
+            document.getElementById('diffList').innerHTML = '<p class="diff-empty">Paste two JSON documents and click Compare.</p>';
+            document.getElementById('copyDiffReportButton').classList.add('hidden');
+        }
+
+        function renderDiff(diffs) {
+            const summary = document.getElementById('diffSummary');
+            const list = document.getElementById('diffList');
+            summary.innerHTML = '';
+            list.innerHTML = '';
+
+            if (diffs.length === 0) {
+                summary.appendChild(makeEl('span', 'diff-pill same', 'Identical'));
+                list.appendChild(makeEl('p', 'diff-empty', 'No differences - the two JSON documents are equivalent.'));
+                lastDiffReport = 'No differences.';
+                document.getElementById('copyDiffReportButton').classList.remove('hidden');
+                return;
+            }
+
+            const counts = { added: 0, removed: 0, changed: 0 };
+            diffs.forEach(d => counts[d.type]++);
+            ['added', 'removed', 'changed'].forEach(t => {
+                if (counts[t]) summary.appendChild(makeEl('span', 'diff-pill ' + t, `${counts[t]} ${t}`));
+            });
+
+            const labels = { added: 'Added', removed: 'Removed', changed: 'Changed' };
+            diffs.slice(0, MAX_DIFF_ROWS).forEach(d => {
+                const row = makeEl('div', 'diff-row ' + d.type);
+                row.appendChild(makeEl('span', 'diff-tag', labels[d.type]));
+                row.appendChild(makeEl('code', 'diff-path', d.path));
+                const val = makeEl('span', 'diff-val');
+                if (d.type === 'added') val.appendChild(makeEl('code', '', previewJson(d.to)));
+                else if (d.type === 'removed') val.appendChild(makeEl('code', 'old', previewJson(d.from)));
+                else {
+                    val.appendChild(makeEl('code', 'old', previewJson(d.from)));
+                    val.appendChild(makeEl('i', 'fas fa-arrow-right'));
+                    val.appendChild(makeEl('code', '', previewJson(d.to)));
+                }
+                row.appendChild(val);
+                list.appendChild(row);
+            });
+            if (diffs.length > MAX_DIFF_ROWS) {
+                list.appendChild(makeEl('p', 'diff-empty', `Showing the first ${MAX_DIFF_ROWS} of ${diffs.length} differences. Copy the report to see all of them.`));
+            }
+
+            lastDiffReport = diffs.map(d => {
+                if (d.type === 'added') return `+ ${d.path}: ${JSON.stringify(d.to)}`;
+                if (d.type === 'removed') return `- ${d.path}: ${JSON.stringify(d.from)}`;
+                return `~ ${d.path}: ${JSON.stringify(d.from)} -> ${JSON.stringify(d.to)}`;
+            }).join('\n');
+            document.getElementById('copyDiffReportButton').classList.remove('hidden');
+        }
+
+        // Parses one side, naming it in the error message. Returns undefined on failure.
+        function parseCompareSide(id, label) {
+            const raw = document.getElementById(id).value.trim();
+            if (!raw) { showMessage(`Please paste the ${label} JSON.`, 'info'); return undefined; }
+            try { return JSON.parse(raw); }
+            catch (err) { showMessage(`${label} JSON is invalid: ${err.message}`, 'error'); return undefined; }
+        }
+
+        document.getElementById('compareJsonButton').addEventListener('click', () => {
+            const left = parseCompareSide('compareLeftInput', 'Original');
+            if (left === undefined) return;
+            const right = parseCompareSide('compareRightInput', 'Modified');
+            if (right === undefined) return;
+            const diffs = diffJson(left, right, document.getElementById('compareIgnoreOrderOption').checked);
+            renderDiff(diffs);
+            showMessage(diffs.length ? `Found ${diffs.length} difference${diffs.length === 1 ? '' : 's'}.` : 'The JSON documents are identical.', 'success');
+        });
+
+        document.getElementById('swapCompareButton').addEventListener('click', () => {
+            const l = document.getElementById('compareLeftInput');
+            const r = document.getElementById('compareRightInput');
+            [l.value, r.value] = [r.value, l.value];
+            resetDiffResults();
+        });
+
+        document.getElementById('formatCompareButton').addEventListener('click', () => {
+            for (const [id, label] of [['compareLeftInput', 'Original'], ['compareRightInput', 'Modified']]) {
+                const el = document.getElementById(id);
+                if (!el.value.trim()) continue;
+                try { el.value = JSON.stringify(JSON.parse(el.value), null, 2); }
+                catch (err) { return showMessage(`${label} JSON is invalid: ${err.message}`, 'error'); }
+            }
+            showMessage('Formatted.', 'success');
+        });
+
+        document.getElementById('copyDiffReportButton').addEventListener('click', () => copyToClipboard(lastDiffReport, 'Report copied to clipboard!'));
 
         // ================= Delimiter Replacer =================
         const copyReplacedTextButton = document.getElementById('copyReplacedTextButton');
