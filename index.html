@@ -4,784 +4,1114 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NanaBoison Utilities</title>
+    <meta name="description" content="Fast, private, no-sign-up developer tools that run entirely in your browser — CSV/JSON converters, JSON linting, QR codes, Markdown preview and more.">
     <link rel="icon" type="image/png" href="https://i.postimg.cc/gwDSdNBh/icon.png">
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
-        
-        * {
-            font-family: 'Inter', sans-serif;
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+        :root {
+            --bg: #080b14;
+            --surface: #0f1626;
+            --surface-2: #131c30;
+            --surface-3: #182238;
+            --border: rgba(148, 163, 184, 0.10);
+            --border-strong: rgba(148, 163, 184, 0.20);
+            --text: #eef2f8;
+            --muted: #94a3b8;
+            --muted-2: #64748b;
+            --blue: #60a5fa;
+            --purple: #a78bfa;
+            --green: #34d399;
+            --amber: #fbbf24;
+            --radius: 16px;
         }
-        
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; }
+
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background:
+                radial-gradient(1100px 560px at 50% -8%, rgba(120, 90, 240, 0.20), transparent 62%),
+                radial-gradient(820px 500px at 88% 4%, rgba(59, 130, 246, 0.12), transparent 60%),
+                radial-gradient(700px 500px at 8% 20%, rgba(139, 92, 246, 0.08), transparent 60%),
+                var(--bg);
+            color: var(--text);
             min-height: 100vh;
-            position: relative;
-            overflow-x: hidden;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
         }
-        
-        body::before {
-            content: '';
-            position: fixed;
+
+        a { color: inherit; text-decoration: none; }
+        button { font-family: inherit; cursor: pointer; }
+
+        .wrap { width: 100%; max-width: 1240px; margin: 0 auto; padding: 0 24px; }
+
+        /* ---------- Header ---------- */
+        .site-header {
+            position: sticky;
             top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(252, 161, 125, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 40% 20%, rgba(139, 92, 246, 0.3) 0%, transparent 50%);
-            animation: gradientShift 15s ease infinite;
-            pointer-events: none;
+            z-index: 50;
+            background: rgba(8, 11, 20, 0.72);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
         }
-        
-        @keyframes gradientShift {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.8; }
+        .header-inner {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+            height: 64px;
         }
-        
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .logo {
+            width: 38px; height: 38px;
+            border-radius: 11px;
+            display: grid; place-items: center;
+            font-weight: 800; font-size: 15px; letter-spacing: -0.5px;
+            color: #fff;
+            background: linear-gradient(140deg, #3b82f6 0%, #6366f1 55%, #8b5cf6 100%);
+            box-shadow: 0 6px 18px -6px rgba(99, 102, 241, 0.7);
         }
-        
-        .tab-button {
+        .brand-name { font-weight: 700; font-size: 17px; letter-spacing: -0.2px; }
+        .main-nav { display: flex; gap: 6px; margin-left: 4px; }
+        .nav-link {
             position: relative;
-            overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 8px 10px;
+            font-size: 15px; font-weight: 500;
+            color: var(--muted);
+            border-radius: 8px;
+            transition: color 0.2s;
         }
-        
-        .tab-button::before {
+        .nav-link:hover { color: var(--text); }
+        .nav-link.active { color: var(--text); }
+        .nav-link.active::after {
             content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
+            position: absolute; left: 10px; right: 10px; bottom: -19px; height: 2px;
+            background: var(--blue);
+            border-radius: 2px;
+        }
+        .header-search {
+            margin-left: auto;
+            position: relative;
+            width: 280px;
+        }
+        .header-search i {
+            position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+            color: var(--muted-2); font-size: 13px;
+        }
+        .header-search input {
             width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: left 0.5s;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 14px;
+            padding: 9px 14px 9px 38px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
-        
-        .tab-button:hover::before {
-            left: 100%;
+        .header-search input::placeholder { color: var(--muted-2); }
+        .header-search input:focus { border-color: rgba(96, 165, 250, 0.5); box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.12); }
+        .kbd {
+            position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+            font-size: 11px; color: var(--muted);
+            border: 1px solid var(--border-strong);
+            border-radius: 6px; padding: 2px 7px;
+            background: rgba(255,255,255,0.02);
         }
-        
-        .tab-button.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(102, 126, 234, 0.4);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .btn-primary::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-        
-        .btn-primary:hover::after {
-            width: 300px;
-            height: 300px;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px -5px rgba(102, 126, 234, 0.5);
-        }
-        
-        .btn-success {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-        }
-        
-        .btn-success:hover {
-            box-shadow: 0 15px 35px -5px rgba(17, 153, 142, 0.5);
-        }
-        
-        .btn-secondary {
-            background: linear-gradient(135deg, #434343 0%, #000000 100%);
-        }
-        
-        .btn-secondary:hover {
-            box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.5);
-        }
-        
-        .btn-purple {
-            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-            color: #4a5568;
-        }
-        
-        .btn-purple:hover {
-            box-shadow: 0 15px 35px -5px rgba(168, 237, 234, 0.5);
-        }
-        
-        textarea, input[type="text"] {
-            transition: all 0.3s ease;
-        }
-        
-        textarea:focus, input[type="text"]:focus {
-            transform: scale(1.01);
-            box-shadow: 0 10px 30px -5px rgba(102, 126, 234, 0.2);
-        }
-        
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+
+        /* ---------- Views ---------- */
+        .view { display: none; animation: fadeUp 0.4s ease; }
+        .view.active { display: block; }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
-        .file-input {
+
+        /* ---------- Hero ---------- */
+        .hero { text-align: center; padding: 78px 0 12px; position: relative; }
+        .badge {
+            display: inline-block;
+            font-size: 12px; font-weight: 700; letter-spacing: 1.4px;
+            color: var(--blue);
+            border: 1px solid rgba(96, 165, 250, 0.35);
+            background: rgba(96, 165, 250, 0.07);
+            padding: 7px 16px; border-radius: 999px;
+            margin-bottom: 26px;
+        }
+        .hero h1 {
+            font-size: clamp(40px, 7vw, 72px);
+            font-weight: 800;
+            letter-spacing: -2px;
+            line-height: 1.03;
+            margin-bottom: 22px;
+        }
+        .grad-text {
+            background: linear-gradient(95deg, #60a5fa 0%, #818cf8 40%, #a78bfa 100%);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent; color: transparent;
+        }
+        .hero p.lead {
+            max-width: 560px; margin: 0 auto 38px;
+            color: var(--muted); font-size: 18px; line-height: 1.6;
+        }
+        .hero-search {
             position: relative;
+            max-width: 620px; margin: 0 auto;
+        }
+        .hero-search i.search-ic {
+            position: absolute; left: 22px; top: 50%; transform: translateY(-50%);
+            color: var(--muted); font-size: 16px;
+        }
+        .hero-search input {
+            width: 100%;
+            background: rgba(15, 22, 38, 0.85);
+            border: 1px solid var(--border-strong);
+            border-radius: 999px;
+            color: var(--text);
+            font-size: 16px;
+            padding: 20px 68px 20px 54px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .hero-search input::placeholder { color: var(--muted-2); }
+        .hero-search input:focus {
+            border-color: rgba(129, 140, 248, 0.55);
+            box-shadow: 0 0 0 4px rgba(129, 140, 248, 0.12), 0 20px 50px -20px rgba(99, 102, 241, 0.5);
+        }
+        .hero-search .go-btn {
+            position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+            width: 42px; height: 42px; border-radius: 999px;
+            display: grid; place-items: center;
+            background: linear-gradient(135deg, #3b82f6, #6366f1);
+            color: #fff; border: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .hero-search .go-btn:hover { transform: translateY(-50%) scale(1.06); box-shadow: 0 8px 20px -6px rgba(99, 102, 241, 0.7); }
+
+        /* ---------- Sections ---------- */
+        .section { padding: 62px 0 20px; }
+        .section-head { margin-bottom: 26px; }
+        .section-head h2 { font-size: 30px; font-weight: 800; letter-spacing: -0.8px; }
+        .section-head p { color: var(--muted); margin-top: 6px; font-size: 15px; }
+
+        /* ---------- Tool cards ---------- */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+        .tool-card {
+            position: relative;
+            text-align: left;
+            background: linear-gradient(180deg, var(--surface-2), var(--surface));
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px 24px 52px;
+            color: var(--text);
             overflow: hidden;
-            display: inline-block;
+            transition: transform 0.25s cubic-bezier(0.4,0,0.2,1), border-color 0.25s, box-shadow 0.25s;
+        }
+        .tool-card::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(400px 200px at 80% -10%, rgba(99,102,241,0.12), transparent 70%);
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .tool-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--border-strong);
+            box-shadow: 0 24px 50px -24px rgba(0,0,0,0.7);
+        }
+        .tool-card:hover::before { opacity: 1; }
+        .icon-tile {
+            width: 46px; height: 46px; border-radius: 12px;
+            display: grid; place-items: center; font-size: 19px;
+            margin-bottom: 18px;
+        }
+        .icon-tile.blue   { background: rgba(59,130,246,0.15);  color: var(--blue); }
+        .icon-tile.green  { background: rgba(16,185,129,0.15);  color: var(--green); }
+        .icon-tile.purple { background: rgba(139,92,246,0.16);  color: var(--purple); }
+        .icon-tile.amber  { background: rgba(245,158,11,0.15);  color: var(--amber); }
+        .tool-card-title { display: block; font-size: 17px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 7px; }
+        .tool-card-desc { display: block; color: var(--muted); font-size: 14px; line-height: 1.55; }
+        .tool-card-arrow {
+            position: absolute; right: 22px; bottom: 20px;
+            color: var(--muted-2); font-size: 14px;
+            transition: transform 0.25s, color 0.25s;
+        }
+        .tool-card:hover .tool-card-arrow { color: var(--blue); transform: translateX(4px); }
+
+        .no-results {
+            display: none;
+            text-align: center; color: var(--muted);
+            padding: 48px 0; font-size: 15px;
+        }
+
+        /* ---------- Trust bar ---------- */
+        .trust-bar {
+            margin-top: 30px;
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            background: linear-gradient(180deg, var(--surface-2), var(--surface));
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 26px 30px;
+        }
+        .trust-item { display: flex; align-items: center; gap: 16px; }
+        .trust-item .t-ic {
+            width: 40px; height: 40px; border-radius: 10px; flex: none;
+            display: grid; place-items: center; font-size: 16px;
+            background: rgba(99,102,241,0.12); color: var(--blue);
+        }
+        .trust-item h4 { font-size: 15px; font-weight: 700; }
+        .trust-item p { font-size: 13px; color: var(--muted); }
+        .trust-item + .trust-item { border-left: 1px solid var(--border); padding-left: 28px; }
+
+        /* ---------- Footer ---------- */
+        .site-footer {
+            margin-top: 70px;
+            border-top: 1px solid var(--border);
+            padding: 30px 0;
+        }
+        .footer-inner { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+        .footer-brand { display: flex; align-items: center; gap: 12px; }
+        .footer-brand .fb-text b { font-size: 15px; font-weight: 700; }
+        .footer-brand .fb-text span { display: block; font-size: 13px; color: var(--muted); }
+        .footer-links { display: flex; gap: 26px; color: var(--muted); font-size: 14px; }
+        .footer-links a:hover { color: var(--text); }
+
+        /* ---------- Workspace ---------- */
+        .workspace { padding: 40px 0 10px; }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 9px;
+            color: var(--muted); font-size: 14px; font-weight: 500;
+            margin-bottom: 26px;
+            transition: color 0.2s;
+        }
+        .back-link:hover { color: var(--text); }
+        .back-link:hover i { transform: translateX(-3px); }
+        .back-link i { transition: transform 0.2s; }
+        .ws-head { display: flex; align-items: center; gap: 16px; margin-bottom: 30px; }
+        .ws-head .icon-tile { margin-bottom: 0; width: 52px; height: 52px; font-size: 22px; }
+        .ws-head h1 { font-size: 30px; font-weight: 800; letter-spacing: -0.7px; }
+        .ws-head p { color: var(--muted); font-size: 15px; margin-top: 3px; }
+
+        .tool-workspace { display: none; }
+        .tool-workspace.active { display: block; animation: fadeUp 0.35s ease; }
+
+        .ws-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+        .panel {
+            background: linear-gradient(180deg, var(--surface-2), var(--surface));
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            display: flex; flex-direction: column;
+        }
+        .panel-label {
+            display: flex; align-items: center; justify-content: space-between;
+            font-size: 13px; font-weight: 600; color: var(--muted);
+            margin-bottom: 12px;
+        }
+        .panel-label .mini-actions { display: flex; gap: 8px; }
+
+        textarea.field, input.field {
+            width: 100%;
+            background: rgba(8, 11, 20, 0.55);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 13px;
+            padding: 14px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        textarea.field {
+            resize: vertical;
+            min-height: 300px;
+            font-family: 'SFMono-Regular', ui-monospace, Menlo, Consolas, monospace;
+            line-height: 1.6;
+        }
+        textarea.field:focus, input.field:focus {
+            border-color: rgba(96,165,250,0.5);
+            box-shadow: 0 0 0 3px rgba(96,165,250,0.10);
+        }
+        textarea.field[readonly] { background: rgba(8,11,20,0.35); }
+        .field-row { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end; }
+        .field-group { flex: 1; min-width: 140px; }
+        .field-group label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 8px; }
+
+        /* Dropzone */
+        .dropzone {
+            border: 1.5px dashed var(--border-strong);
+            border-radius: 12px;
+            min-height: 300px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 12px; text-align: center; padding: 24px;
+            background: rgba(8,11,20,0.4);
             cursor: pointer;
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            padding: 1rem 2rem;
-            border-radius: 9999px;
-            color: white;
-            font-weight: 600;
-            transition: all 0.3s ease;
+            transition: border-color 0.2s, background 0.2s;
         }
-        
-        .file-input:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px -5px rgba(245, 87, 108, 0.5);
+        .dropzone:hover, .dropzone.drag { border-color: rgba(96,165,250,0.6); background: rgba(59,130,246,0.06); }
+        .dropzone .dz-ic { font-size: 34px; color: var(--blue); }
+        .dropzone .dz-title { font-size: 15px; font-weight: 600; }
+        .dropzone .dz-sub { font-size: 13px; color: var(--muted); }
+        .dropzone .dz-file { font-size: 13px; color: var(--green); font-weight: 600; word-break: break-all; }
+
+        /* Buttons */
+        .ws-actions { display: flex; justify-content: center; gap: 14px; margin-top: 24px; flex-wrap: wrap; }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+            font-size: 14px; font-weight: 600;
+            padding: 13px 26px; border-radius: 12px; border: 1px solid transparent;
+            transition: transform 0.2s, box-shadow 0.2s, background 0.2s, opacity 0.2s;
+            white-space: nowrap;
         }
-        
-        .file-input input[type=file] {
-            position: absolute;
-            top: 0;
-            right: 0;
-            margin: 0;
-            padding: 0;
-            font-size: 20px;
-            cursor: pointer;
-            opacity: 0;
-            filter: alpha(opacity=0);
+        .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+        .btn-primary { background: linear-gradient(135deg, #3b82f6, #6366f1); color: #fff; }
+        .btn-primary:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 14px 30px -10px rgba(99,102,241,0.65); }
+        .btn-secondary { background: var(--surface-3); color: var(--text); border-color: var(--border-strong); }
+        .btn-secondary:not(:disabled):hover { transform: translateY(-2px); background: #1e2a44; }
+        .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
+        .btn-success:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 14px 30px -10px rgba(16,185,129,0.6); }
+        .btn-mini {
+            font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 8px;
+            background: var(--surface-3); color: var(--muted); border: 1px solid var(--border);
+            display: inline-flex; align-items: center; gap: 6px;
         }
-        
-        #markdownPreview {
-            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+        .btn-mini:hover { color: var(--text); border-color: var(--border-strong); }
+        .hidden { display: none !important; }
+
+        /* QR preview */
+        .qr-preview {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            min-height: 320px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 18px; padding: 24px;
+            background: rgba(8,11,20,0.4);
         }
-        
-        #markdownPreview h1 { 
-            font-size: 2em; 
-            font-weight: 800; 
-            margin-bottom: 0.5em; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            border-bottom: 2px solid #e5e7eb;
+        #qrCodeCanvas { border-radius: 12px; background: #fff; padding: 12px; }
+        .qr-placeholder { color: var(--muted); font-size: 14px; }
+
+        /* Markdown preview */
+        .md-preview {
+            background: rgba(8,11,20,0.4);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            min-height: 420px;
+            overflow-y: auto;
+            font-size: 14px; line-height: 1.7;
         }
-        
-        #markdownPreview h2 { 
-            font-size: 1.5em; 
-            font-weight: 700; 
-            margin-bottom: 0.5em; 
-            color: #667eea;
-            border-bottom: 1px solid #e5e7eb; 
+        .md-preview h1 { font-size: 1.7em; font-weight: 800; margin: 0.4em 0 0.5em; padding-bottom: 0.3em; border-bottom: 1px solid var(--border); }
+        .md-preview h2 { font-size: 1.35em; font-weight: 700; color: var(--blue); margin: 0.9em 0 0.4em; }
+        .md-preview h3 { font-size: 1.15em; font-weight: 700; margin: 0.8em 0 0.35em; }
+        .md-preview p { margin: 0.6em 0; color: #d3dae6; }
+        .md-preview a { color: var(--blue); }
+        .md-preview code { background: rgba(148,163,184,0.15); padding: 2px 6px; border-radius: 5px; font-size: 0.9em; }
+        .md-preview pre { background: rgba(8,11,20,0.8); padding: 14px; border-radius: 10px; overflow-x: auto; margin: 0.7em 0; border: 1px solid var(--border); }
+        .md-preview pre code { background: none; padding: 0; }
+        .md-preview ul, .md-preview ol { padding-left: 1.4em; margin: 0.6em 0; color: #d3dae6; }
+        .md-preview blockquote { border-left: 3px solid var(--blue); padding-left: 14px; color: var(--muted); margin: 0.7em 0; }
+        .md-preview table { border-collapse: collapse; width: 100%; margin: 0.7em 0; }
+        .md-preview th, .md-preview td { border: 1px solid var(--border); padding: 7px 11px; text-align: left; }
+
+        /* About */
+        .about { padding: 48px 0 10px; max-width: 780px; }
+        .about h1 { font-size: 34px; font-weight: 800; letter-spacing: -0.8px; margin-bottom: 16px; }
+        .about p { color: var(--muted); font-size: 16px; line-height: 1.7; margin-bottom: 16px; }
+        .about .about-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-top: 30px; }
+        .about-card { background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+        .about-card i { color: var(--blue); font-size: 20px; margin-bottom: 10px; display: block; }
+        .about-card b { display: block; margin-bottom: 4px; }
+        .about-card span { font-size: 13px; color: var(--muted); }
+
+        /* Toast */
+        #toast {
+            position: fixed; left: 50%; bottom: 30px; transform: translateX(-50%) translateY(20px);
+            z-index: 100;
+            background: var(--surface-3);
+            border: 1px solid var(--border-strong);
+            border-radius: 12px;
+            padding: 13px 20px;
+            font-size: 14px; font-weight: 500;
+            box-shadow: 0 20px 50px -18px rgba(0,0,0,0.8);
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.3s, transform 0.3s;
+            display: flex; align-items: center; gap: 10px;
+            max-width: 90vw;
         }
-        
-        .message-box {
-            animation: slideDown 0.3s ease;
+        #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        #toast.success { border-color: rgba(16,185,129,0.5); }
+        #toast.success i { color: var(--green); }
+        #toast.error { border-color: rgba(239,68,68,0.5); }
+        #toast.error i { color: #f87171; }
+        #toast.info i { color: var(--blue); }
+
+        /* ---------- Responsive ---------- */
+        @media (max-width: 1024px) {
+            .tools-grid { grid-template-columns: repeat(2, 1fr); }
         }
-        
-        @keyframes slideDown {
-            from { transform: translateY(-20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+        @media (max-width: 720px) {
+            .header-search { display: none; }
+            .main-nav { margin-left: auto; }
+            .header-inner { gap: 14px; }
+            .ws-grid { grid-template-columns: 1fr; }
+            .trust-bar { grid-template-columns: 1fr; gap: 22px; }
+            .trust-item + .trust-item { border-left: none; padding-left: 0; }
+            .about .about-grid { grid-template-columns: 1fr; }
+            .hero { padding: 52px 0 10px; }
+            .section { padding: 46px 0 10px; }
         }
-        
-        .icon-animate {
-            display: inline-block;
-            transition: transform 0.3s ease;
-        }
-        
-        button:hover .icon-animate {
-            transform: scale(1.2) rotate(5deg);
-        }
-        
-        .qr-container {
-            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+        @media (max-width: 480px) {
+            .tools-grid { grid-template-columns: 1fr; }
+            .wrap { padding: 0 18px; }
+            .ws-head { flex-wrap: wrap; }
         }
     </style>
 </head>
-<body class="flex items-center justify-center p-4 min-h-screen">
-    <div class="glass-card p-8 rounded-3xl w-full max-w-6xl text-center fade-in" style="animation-delay: 0.1s;">
-        
-        <!-- Header -->
-        <div class="mb-10">
-            <h1 class="text-5xl font-extrabold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600">
-                NanaBoison Utilities
-            </h1>
-            <p class="text-gray-600 text-sm">Powerful tools for developers and creators</p>
-        </div>
+<body>
 
-        <!-- Navigation Tabs -->
-        <div class="flex justify-center mb-8 bg-white bg-opacity-50 rounded-2xl p-2 shadow-inner flex-wrap gap-2">
-            <button id="tabCsvToJson" class="tab-button active py-3 px-6 rounded-xl font-semibold text-sm">
-                <i class="fas fa-file-csv icon-animate mr-2"></i>CSV to JSON
-            </button>
-            <button id="tabJsonToCsv" class="tab-button py-3 px-6 rounded-xl font-semibold text-sm">
-                <i class="fas fa-table icon-animate mr-2"></i>JSON to CSV
-            </button>
-            <button id="tabJsonBeautifier" class="tab-button py-3 px-6 rounded-xl font-semibold text-sm">
-                <i class="fas fa-code icon-animate mr-2"></i>JSON Lint
-            </button>
-            <button id="tabJsonStringify" class="tab-button py-3 px-6 rounded-xl font-semibold text-sm">
-                <i class="fas fa-quote-right icon-animate mr-2"></i>Stringify
-            </button>
-            <button id="tabTextDelimiter" class="tab-button py-3 px-6 rounded-xl font-semibold text-sm">
-                <i class="fas fa-exchange-alt icon-animate mr-2"></i>Delimiter
-            </button>
-            <button id="tabQrCodeGenerator" class="tab-button py-3 px-6 rounded-xl font-semibold text-sm">
-                <i class="fas fa-qrcode icon-animate mr-2"></i>QR Code
-            </button>
-            <button id="tabMarkdownViewer" class="tab-button py-3 px-6 rounded-xl font-semibold text-sm">
-                <i class="fab fa-markdown icon-animate mr-2"></i>Markdown
-            </button>
-            <button id="tabEpubToPdf" class="tab-button py-3 px-6 rounded-xl font-semibold text-sm">
-                <i class="fas fa-file-pdf icon-animate mr-2"></i>EPUB to PDF
-            </button>
-        </div>
-
-        <!-- Message Box -->
-        <div id="messageBox" class="message-box mb-6 p-4 text-sm rounded-xl hidden text-left shadow-lg" role="alert"></div>
-
-        <!-- CSV to JSON Section -->
-        <div id="csvToJsonSection" class="converter-section fade-in">
-            <p class="text-gray-600 mb-8 text-lg">Transform your CSV files into structured JSON format</p>
-            <label class="file-input mb-6 block w-full md:w-auto inline-block">
-                <i class="fas fa-upload mr-2"></i>Choose CSV File
-                <input type="file" id="csvFileInput" accept=".csv" />
-            </label>
-            <button id="convertCsvToJsonButton" class="btn-primary w-full text-white font-bold py-4 px-8 rounded-2xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed mb-6" disabled>
-                <i class="fas fa-sync-alt icon-animate mr-2"></i>Convert to JSON
-            </button>
-
-            <div id="jsonOutputContainer" class="hidden mt-8 text-left fade-in">
-                <label for="jsonOutput" class="block text-gray-800 text-sm font-bold mb-3">Generated JSON:</label>
-                <textarea id="jsonOutput" class="w-full p-4 border-2 border-purple-200 rounded-2xl bg-white text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[300px]" readonly></textarea>
-                <button id="downloadJsonButton" class="btn-success mt-6 text-white font-bold py-3 px-6 rounded-2xl shadow-md">
-                    <i class="fas fa-download icon-animate mr-2"></i>Download JSON
-                </button>
+    <!-- Header -->
+    <header class="site-header">
+        <div class="wrap header-inner">
+            <a href="#/" class="brand">
+                <span class="logo">NB</span>
+                <span class="brand-name">NanaBoison Utilities</span>
+            </a>
+            <nav class="main-nav">
+                <a href="#/" class="nav-link" data-nav="tools">Tools</a>
+                <a href="#/about" class="nav-link" data-nav="about">About</a>
+            </nav>
+            <div class="header-search">
+                <i class="fas fa-search"></i>
+                <input type="text" id="headerSearch" placeholder="Search tools..." autocomplete="off" aria-label="Search tools">
+                <span class="kbd">⌘ K</span>
             </div>
         </div>
+    </header>
 
-        <!-- JSON to CSV Section -->
-        <div id="jsonToCsvSection" class="converter-section hidden">
-            <p class="text-gray-600 mb-8 text-lg">Convert your JSON data into spreadsheet-ready CSV</p>
-            <label class="file-input mb-6 block w-full md:w-auto inline-block">
-                <i class="fas fa-upload mr-2"></i>Choose JSON File
-                <input type="file" id="jsonFileInput" accept=".json" />
-            </label>
-            <button id="convertJsonToCsvButton" class="btn-primary w-full text-white font-bold py-4 px-8 rounded-2xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                <i class="fas fa-sync-alt icon-animate mr-2"></i>Convert to CSV
-            </button>
-        </div>
+    <main class="wrap">
 
-        <!-- JSON Beautifier Section -->
-        <div id="jsonBeautifierSection" class="converter-section hidden">
-            <p class="text-gray-600 mb-8 text-lg">Lint and beautify your JSON with perfect formatting</p>
-            <div class="flex flex-col md:flex-row gap-4 mb-6">
-                <button id="beautifyJsonButton" class="btn-primary flex-1 text-white font-bold py-4 px-6 rounded-2xl shadow-lg">
-                    <i class="fas fa-magic icon-animate mr-2"></i>Lint & Beautify
-                </button>
-                <button id="downloadBeautifiedJsonButton" class="btn-success flex-1 text-white font-bold py-4 px-6 rounded-2xl shadow-lg hidden">
-                    <i class="fas fa-download icon-animate mr-2"></i>Download
-                </button>
-                <button id="copyBeautifiedJsonButton" class="btn-secondary flex-1 text-white font-bold py-4 px-6 rounded-2xl shadow-lg hidden">
-                    <i class="fas fa-copy icon-animate mr-2"></i>Copy
-                </button>
-            </div>
-            <div class="flex flex-col md:flex-row gap-6">
-                <div class="flex-1">
-                    <label for="jsonInputToBeautify" class="block text-gray-800 text-sm font-bold mb-3 text-left">Input JSON:</label>
-                    <textarea id="jsonInputToBeautify" class="w-full p-4 border-2 border-purple-200 rounded-2xl bg-white text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[350px]" placeholder='{"name":"John","age":30}'></textarea>
-                </div>
-                <div class="flex-1">
-                    <label for="beautifiedJsonOutput" class="block text-gray-800 text-sm font-bold mb-3 text-left">Beautified JSON:</label>
-                    <textarea id="beautifiedJsonOutput" class="w-full p-4 border-2 border-purple-200 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800 font-mono text-xs focus:outline-none min-h-[350px]" readonly></textarea>
+        <!-- ===================== HOME VIEW ===================== -->
+        <section id="view-home" class="view active">
+            <div class="hero">
+                <span class="badge">FREE DEVELOPER TOOLS</span>
+                <h1>Simple tools.<br><span class="grad-text">Less busywork.</span></h1>
+                <p class="lead">NanaBoison Utilities gives you fast, reliable tools to handle everyday developer and creator tasks — right in your browser.</p>
+                <div class="hero-search">
+                    <i class="fas fa-search search-ic"></i>
+                    <input type="text" id="heroSearch" placeholder="Search tools..." autocomplete="off" aria-label="Search tools">
+                    <button class="go-btn" id="heroSearchGo" aria-label="Search"><i class="fas fa-arrow-right"></i></button>
                 </div>
             </div>
-        </div>
 
-        <!-- JSON Stringify Section -->
-        <div id="jsonStringifySection" class="converter-section hidden">
-            <p class="text-gray-600 mb-8 text-lg">Convert between JSON and escaped string literals</p>
-            <div class="flex flex-col md:flex-row gap-4 mb-6">
-                <button id="jsonToStringButton" class="btn-primary flex-1 text-white font-bold py-4 px-6 rounded-2xl shadow-lg">
-                    <i class="fas fa-arrow-right icon-animate mr-2"></i>JSON to String
-                </button>
-                <button id="stringToJsonButton" class="btn-purple flex-1 font-bold py-4 px-6 rounded-2xl shadow-lg">
-                    <i class="fas fa-arrow-left icon-animate mr-2"></i>String to JSON
-                </button>
-                <button id="copyStringifyResultButton" class="btn-secondary flex-1 text-white font-bold py-4 px-6 rounded-2xl shadow-lg hidden">
-                    <i class="fas fa-copy icon-animate mr-2"></i>Copy
-                </button>
-            </div>
-            <div class="flex flex-col md:flex-row gap-6">
-                <div class="flex-1">
-                    <label for="stringifyInput" class="block text-gray-800 text-sm font-bold mb-3 text-left">Input:</label>
-                    <textarea id="stringifyInput" class="w-full p-4 border-2 border-purple-200 rounded-2xl bg-white text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[350px]" placeholder='Paste JSON or string here...'></textarea>
+            <div class="section">
+                <div class="section-head">
+                    <h2>Popular tools</h2>
+                    <p>The most used tools, ready when you need them.</p>
                 </div>
-                <div class="flex-1">
-                    <label for="stringifyOutput" class="block text-gray-800 text-sm font-bold mb-3 text-left">Output:</label>
-                    <textarea id="stringifyOutput" class="w-full p-4 border-2 border-purple-200 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800 font-mono text-xs focus:outline-none min-h-[350px]" readonly></textarea>
-                </div>
-            </div>
-        </div>
+                <div class="tools-grid" id="toolsGrid"></div>
+                <div class="no-results" id="noResults">No tools match your search.</div>
 
-        <!-- Text Delimiter Section -->
-        <div id="textDelimiterSection" class="converter-section hidden">
-            <p class="text-gray-600 mb-8 text-lg">Replace delimiters in your text instantly</p>
-            <div class="flex flex-col md:flex-row gap-6 mb-6">
-                <div class="flex-1">
-                    <label for="textInputToReplace" class="block text-gray-800 text-sm font-bold mb-3 text-left">Input Text:</label>
-                    <textarea id="textInputToReplace" class="w-full p-4 border-2 border-purple-200 rounded-2xl bg-white text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[350px]" placeholder='apple|banana|cherry'></textarea>
-                </div>
-                <div class="flex-1">
-                    <label for="replacedTextOutput" class="block text-gray-800 text-sm font-bold mb-3 text-left">Output Text:</label>
-                    <textarea id="replacedTextOutput" class="w-full p-4 border-2 border-purple-200 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800 font-mono text-xs focus:outline-none min-h-[350px]" readonly></textarea>
-                </div>
-            </div>
-            <div class="flex flex-col md:flex-row gap-4 items-end mb-6">
-                <div class="flex-1 text-left">
-                    <label for="oldDelimiterInput" class="block text-gray-800 text-sm font-bold mb-3">Old Delimiter:</label>
-                    <input type="text" id="oldDelimiterInput" class="w-full p-4 border-2 border-purple-200 rounded-xl bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="|" />
-                </div>
-                <div class="flex-1 text-left">
-                    <label for="newDelimiterInput" class="block text-gray-800 text-sm font-bold mb-3">New Delimiter:</label>
-                    <input type="text" id="newDelimiterInput" class="w-full p-4 border-2 border-purple-200 rounded-xl bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="," />
-                </div>
-                <button id="replaceDelimiterButton" class="btn-primary flex-1 text-white font-bold py-4 px-6 rounded-2xl shadow-lg">
-                    <i class="fas fa-sync icon-animate mr-2"></i>Replace
-                </button>
-            </div>
-            <div class="flex gap-4">
-                <button id="downloadReplacedTextButton" class="btn-success flex-1 text-white font-bold py-3 px-6 rounded-2xl shadow-lg hidden">
-                    <i class="fas fa-download icon-animate mr-2"></i>Download
-                </button>
-                <button id="copyReplacedTextButton" class="btn-secondary flex-1 text-white font-bold py-3 px-6 rounded-2xl shadow-lg hidden">
-                    <i class="fas fa-copy icon-animate mr-2"></i>Copy
-                </button>
-            </div>
-        </div>
-        
-        <!-- QR Code Generator Section -->
-        <div id="qrCodeGeneratorSection" class="converter-section hidden">
-            <p class="text-gray-600 mb-8 text-lg">Generate beautiful QR codes for any text or URL</p>
-            <div class="flex flex-col md:flex-row gap-6 items-start">
-                <div class="flex-1">
-                    <label for="qrCodeInput" class="block text-gray-800 text-sm font-bold mb-3 text-left">Text or URL:</label>
-                    <textarea id="qrCodeInput" class="w-full p-4 border-2 border-purple-200 rounded-2xl bg-white text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[250px]" placeholder='https://www.example.com'></textarea>
-                    <button id="generateQrCodeButton" class="btn-primary w-full mt-6 text-white font-bold py-4 px-6 rounded-2xl shadow-lg">
-                        <i class="fas fa-qrcode icon-animate mr-2"></i>Generate QR Code
-                    </button>
-                </div>
-                <div class="flex-1">
-                    <label class="block text-gray-800 text-sm font-bold mb-3 text-left">QR Code Preview:</label>
-                    <div id="qrCodeOutputContainer" class="qr-container p-8 rounded-2xl flex flex-col items-center justify-center min-h-[250px] space-y-4 border-2 border-purple-200">
-                        <canvas id="qrCodeCanvas" class="hidden rounded-xl shadow-xl"></canvas>
-                        <p id="qrCodePlaceholder" class="text-gray-500">Your QR code will appear here</p>
-                        <button id="downloadQrCodeButton" class="btn-success text-white font-bold py-3 px-6 rounded-2xl shadow-lg hidden mt-4">
-                            <i class="fas fa-download icon-animate mr-2"></i>Download QR Code
-                        </button>
+                <div class="trust-bar">
+                    <div class="trust-item">
+                        <span class="t-ic"><i class="fas fa-bolt"></i></span>
+                        <div><h4>Fast</h4><p>Get results in seconds.</p></div>
+                    </div>
+                    <div class="trust-item">
+                        <span class="t-ic"><i class="fas fa-lock"></i></span>
+                        <div><h4>Private</h4><p>Your data stays in your browser.</p></div>
+                    </div>
+                    <div class="trust-item">
+                        <span class="t-ic"><i class="fas fa-user"></i></span>
+                        <div><h4>No sign-up</h4><p>Just open and use.</p></div>
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <!-- Markdown Viewer Section -->
-        <div id="markdownViewerSection" class="converter-section hidden">
-            <p class="text-gray-600 mb-8 text-lg">Write Markdown and see live HTML preview</p>
-            <div class="flex gap-4 mb-6">
-                <button id="copyMarkdownHtmlButton" class="btn-secondary flex-1 text-white font-bold py-4 px-6 rounded-2xl shadow-lg">
-                    <i class="fas fa-copy icon-animate mr-2"></i>Copy HTML
-                </button>
-                <button id="downloadMarkdownHtmlButton" class="btn-success flex-1 text-white font-bold py-4 px-6 rounded-2xl shadow-lg">
-                    <i class="fas fa-download icon-animate mr-2"></i>Download HTML
-                </button>
-            </div>
-            <div class="flex flex-col md:flex-row gap-6">
-                <div class="flex-1">
-                    <label for="markdownInput" class="block text-gray-800 text-sm font-bold mb-3 text-left">Markdown Editor:</label>
-                    <textarea id="markdownInput" class="w-full p-4 border-2 border-purple-200 rounded-2xl bg-white text-gray-800 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[450px]" placeholder="# Hello Markdown&#10;&#10;Write your content here..."></textarea>
-                </div>
-                <div class="flex-1">
-                    <label class="block text-gray-800 text-sm font-bold mb-3 text-left">Live Preview:</label>
-                    <div id="markdownPreview" class="text-left p-6 border-2 border-purple-200 rounded-2xl min-h-[450px] overflow-y-auto"></div>
+        <!-- ===================== ABOUT VIEW ===================== -->
+        <section id="view-about" class="view">
+            <div class="about">
+                <h1>About NanaBoison Utilities</h1>
+                <p>NanaBoison Utilities is a small, focused developer toolbox — a collection of everyday converters and generators that run entirely in your browser. There's nothing to install and nothing to sign up for.</p>
+                <p>Every tool works client-side: your files and text never leave your device. Paste, drop, convert, and copy the result. That's it.</p>
+                <div class="about-grid">
+                    <div class="about-card"><i class="fas fa-bolt"></i><b>Fast</b><span>Everything runs locally, so results are instant.</span></div>
+                    <div class="about-card"><i class="fas fa-lock"></i><b>Private</b><span>Your data is processed in the browser and never uploaded.</span></div>
+                    <div class="about-card"><i class="fas fa-user"></i><b>No sign-up</b><span>Open a tool and start working — no account needed.</span></div>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <!-- EPUB to PDF Section -->
-        <div id="epubToPdfSection" class="converter-section hidden">
-            <p class="text-gray-600 mb-8 text-lg">Convert your EPUB ebooks to PDF format</p>
-            
-            <!-- Server Status Indicator -->
-            <div id="serverStatusIndicator" class="mb-6 p-4 rounded-xl border-2 hidden">
-                <div class="flex items-center justify-center space-x-3">
-                    <div id="serverStatusIcon" class="flex items-center space-x-2">
-                        <div class="w-3 h-3 rounded-full"></div>
-                        <span id="serverStatusText" class="text-sm font-semibold"></span>
+        <!-- ===================== TOOL VIEW ===================== -->
+        <section id="view-tool" class="view">
+            <div class="workspace">
+                <a href="#/" class="back-link"><i class="fas fa-arrow-left"></i> Back to tools</a>
+
+                <!-- CSV to JSON -->
+                <div class="tool-workspace" id="ws-csv-to-json">
+                    <div class="ws-head">
+                        <span class="icon-tile blue"><i class="fas fa-file-csv"></i></span>
+                        <div><h1>CSV to JSON</h1><p>Convert CSV files into structured JSON.</p></div>
                     </div>
-                </div>
-            </div>
-            
-            <div class="max-w-2xl mx-auto">
-                <label class="file-input mb-6 block w-full md:w-auto inline-block">
-                    <i class="fas fa-upload mr-2"></i>Choose EPUB File
-                    <input type="file" id="epubFileInput" accept=".epub" />
-                </label>
-                <button id="convertEpubToPdfButton" class="btn-primary w-full text-white font-bold py-4 px-8 rounded-2xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed mb-6" disabled>
-                    <i class="fas fa-sync-alt icon-animate mr-2"></i>Convert to PDF
-                </button>
-                
-                <div id="epubConversionProgress" class="hidden mb-6">
-                    <div class="bg-gray-200 rounded-full h-4 overflow-hidden">
-                        <div id="epubProgressBar" class="h-full bg-gradient-to-r from-purple-600 to-pink-600 transition-all duration-300" style="width: 0%"></div>
-                    </div>
-                    <p id="epubProgressText" class="text-center mt-2 text-sm text-gray-600">Processing...</p>
-                </div>
-
-                <div id="epubOutputContainer" class="hidden mt-8 text-left fade-in">
-                    <div class="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-2xl border-2 border-purple-200">
-                        <div class="flex items-center justify-between mb-4">
-                            <div>
-                                <p class="text-gray-800 font-bold text-lg">✓ Conversion Complete!</p>
-                                <p id="epubFileName" class="text-gray-600 text-sm mt-1"></p>
+                    <div class="ws-grid">
+                        <div class="panel">
+                            <div class="panel-label"><span>Input CSV</span></div>
+                            <div class="dropzone" id="csvDropzone">
+                                <i class="fas fa-cloud-arrow-up dz-ic"></i>
+                                <div class="dz-title">Drop CSV here</div>
+                                <div class="dz-sub">or click to choose a file</div>
+                                <div class="dz-file hidden" id="csvFileName"></div>
+                                <input type="file" id="csvFileInput" accept=".csv" class="hidden">
                             </div>
-                            <i class="fas fa-file-pdf text-5xl text-red-500"></i>
                         </div>
-                        <button id="downloadPdfButton" class="btn-success w-full text-white font-bold py-3 px-6 rounded-2xl shadow-md">
-                            <i class="fas fa-download icon-animate mr-2"></i>Download PDF
-                        </button>
+                        <div class="panel">
+                            <div class="panel-label">
+                                <span>JSON Output</span>
+                                <span class="mini-actions">
+                                    <button class="btn-mini hidden" id="copyJsonBtn"><i class="fas fa-copy"></i> Copy</button>
+                                    <button class="btn-mini hidden" id="downloadJsonBtn"><i class="fas fa-download"></i> Download</button>
+                                </span>
+                            </div>
+                            <textarea class="field" id="jsonOutput" readonly placeholder="Your JSON will appear here..."></textarea>
+                        </div>
+                    </div>
+                    <div class="ws-actions">
+                        <button class="btn btn-primary" id="convertCsvToJsonButton" disabled><i class="fas fa-sync-alt"></i> Convert to JSON</button>
                     </div>
                 </div>
-            </div>
-        </div>
 
-    </div>
+                <!-- JSON to CSV -->
+                <div class="tool-workspace" id="ws-json-to-csv">
+                    <div class="ws-head">
+                        <span class="icon-tile green"><i class="fas fa-table"></i></span>
+                        <div><h1>JSON to CSV</h1><p>Convert JSON data into spreadsheet-ready CSV.</p></div>
+                    </div>
+                    <div class="ws-grid">
+                        <div class="panel">
+                            <div class="panel-label"><span>Input JSON</span></div>
+                            <textarea class="field" id="jsonToCsvInput" placeholder='[{"name":"John","age":30}]'></textarea>
+                            <div class="dropzone" id="jsonDropzone" style="min-height:auto;margin-top:14px;padding:16px;">
+                                <div class="dz-sub"><i class="fas fa-cloud-arrow-up"></i> &nbsp;Drop a .json file or click to choose</div>
+                                <div class="dz-file hidden" id="jsonFileName"></div>
+                                <input type="file" id="jsonFileInput" accept=".json" class="hidden">
+                            </div>
+                        </div>
+                        <div class="panel">
+                            <div class="panel-label">
+                                <span>CSV Output</span>
+                                <span class="mini-actions">
+                                    <button class="btn-mini hidden" id="copyCsvBtn"><i class="fas fa-copy"></i> Copy</button>
+                                    <button class="btn-mini hidden" id="downloadCsvBtn"><i class="fas fa-download"></i> Download</button>
+                                </span>
+                            </div>
+                            <textarea class="field" id="csvOutput" readonly placeholder="Your CSV will appear here..."></textarea>
+                        </div>
+                    </div>
+                    <div class="ws-actions">
+                        <button class="btn btn-primary" id="convertJsonToCsvButton"><i class="fas fa-sync-alt"></i> Convert to CSV</button>
+                    </div>
+                </div>
+
+                <!-- JSON Lint & Beautify -->
+                <div class="tool-workspace" id="ws-json-lint">
+                    <div class="ws-head">
+                        <span class="icon-tile purple"><i class="fas fa-code"></i></span>
+                        <div><h1>JSON Lint &amp; Beautify</h1><p>Validate and format your JSON with perfect indentation.</p></div>
+                    </div>
+                    <div class="ws-grid">
+                        <div class="panel">
+                            <div class="panel-label"><span>Input JSON</span></div>
+                            <textarea class="field" id="jsonInputToBeautify" placeholder='{"name":"John","age":30}'></textarea>
+                        </div>
+                        <div class="panel">
+                            <div class="panel-label">
+                                <span>Beautified JSON</span>
+                                <span class="mini-actions">
+                                    <button class="btn-mini hidden" id="copyBeautifiedJsonButton"><i class="fas fa-copy"></i> Copy</button>
+                                    <button class="btn-mini hidden" id="downloadBeautifiedJsonButton"><i class="fas fa-download"></i> Download</button>
+                                </span>
+                            </div>
+                            <textarea class="field" id="beautifiedJsonOutput" readonly placeholder="Formatted JSON will appear here..."></textarea>
+                        </div>
+                    </div>
+                    <div class="ws-actions">
+                        <button class="btn btn-primary" id="beautifyJsonButton"><i class="fas fa-wand-magic-sparkles"></i> Lint &amp; Beautify</button>
+                    </div>
+                </div>
+
+                <!-- JSON to String / String to JSON -->
+                <div class="tool-workspace" id="ws-json-string">
+                    <div class="ws-head">
+                        <span class="icon-tile amber"><i class="fas fa-exchange-alt"></i></span>
+                        <div><h1>JSON to String / String to JSON</h1><p>Convert between JSON and escaped string literals.</p></div>
+                    </div>
+                    <div class="ws-grid">
+                        <div class="panel">
+                            <div class="panel-label"><span>Input</span></div>
+                            <textarea class="field" id="stringifyInput" placeholder="Paste JSON or an escaped string..."></textarea>
+                        </div>
+                        <div class="panel">
+                            <div class="panel-label">
+                                <span>Output</span>
+                                <span class="mini-actions">
+                                    <button class="btn-mini hidden" id="copyStringifyResultButton"><i class="fas fa-copy"></i> Copy</button>
+                                </span>
+                            </div>
+                            <textarea class="field" id="stringifyOutput" readonly placeholder="Result will appear here..."></textarea>
+                        </div>
+                    </div>
+                    <div class="ws-actions">
+                        <button class="btn btn-primary" id="jsonToStringButton"><i class="fas fa-arrow-right"></i> JSON to String</button>
+                        <button class="btn btn-secondary" id="stringToJsonButton"><i class="fas fa-arrow-left"></i> String to JSON</button>
+                    </div>
+                </div>
+
+                <!-- Delimiter Replacer -->
+                <div class="tool-workspace" id="ws-delimiter">
+                    <div class="ws-head">
+                        <span class="icon-tile green"><i class="fas fa-list"></i></span>
+                        <div><h1>Delimiter Replacer</h1><p>Replace delimiters in your text instantly.</p></div>
+                    </div>
+                    <div class="ws-grid">
+                        <div class="panel">
+                            <div class="panel-label"><span>Input Text</span></div>
+                            <textarea class="field" id="textInputToReplace" placeholder="apple|banana|cherry"></textarea>
+                        </div>
+                        <div class="panel">
+                            <div class="panel-label">
+                                <span>Output Text</span>
+                                <span class="mini-actions">
+                                    <button class="btn-mini hidden" id="copyReplacedTextButton"><i class="fas fa-copy"></i> Copy</button>
+                                    <button class="btn-mini hidden" id="downloadReplacedTextButton"><i class="fas fa-download"></i> Download</button>
+                                </span>
+                            </div>
+                            <textarea class="field" id="replacedTextOutput" readonly placeholder="Result will appear here..."></textarea>
+                        </div>
+                    </div>
+                    <div class="field-row" style="margin-top:20px;">
+                        <div class="field-group">
+                            <label for="oldDelimiterInput">Old Delimiter</label>
+                            <input type="text" class="field" id="oldDelimiterInput" placeholder="|">
+                        </div>
+                        <div class="field-group">
+                            <label for="newDelimiterInput">New Delimiter</label>
+                            <input type="text" class="field" id="newDelimiterInput" placeholder=",">
+                        </div>
+                        <div class="field-group" style="flex:0 0 auto;">
+                            <button class="btn btn-primary" id="replaceDelimiterButton"><i class="fas fa-sync"></i> Replace</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QR Code Generator -->
+                <div class="tool-workspace" id="ws-qr">
+                    <div class="ws-head">
+                        <span class="icon-tile purple"><i class="fas fa-qrcode"></i></span>
+                        <div><h1>QR Code Generator</h1><p>Generate QR codes for any text or URL.</p></div>
+                    </div>
+                    <div class="ws-grid">
+                        <div class="panel">
+                            <div class="panel-label"><span>Text or URL</span></div>
+                            <textarea class="field" id="qrCodeInput" placeholder="https://www.example.com" style="min-height:250px;"></textarea>
+                            <button class="btn btn-primary" id="generateQrCodeButton" style="margin-top:16px;"><i class="fas fa-qrcode"></i> Generate QR Code</button>
+                        </div>
+                        <div class="panel">
+                            <div class="panel-label"><span>Preview</span></div>
+                            <div class="qr-preview">
+                                <canvas id="qrCodeCanvas" class="hidden"></canvas>
+                                <p class="qr-placeholder" id="qrCodePlaceholder">Your QR code will appear here</p>
+                                <button class="btn btn-success hidden" id="downloadQrCodeButton"><i class="fas fa-download"></i> Download PNG</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Markdown Live Preview -->
+                <div class="tool-workspace" id="ws-markdown">
+                    <div class="ws-head">
+                        <span class="icon-tile green"><i class="fab fa-markdown"></i></span>
+                        <div><h1>Markdown Live Preview</h1><p>Write Markdown and see the live HTML preview.</p></div>
+                    </div>
+                    <div class="ws-grid">
+                        <div class="panel">
+                            <div class="panel-label"><span>Markdown Editor</span></div>
+                            <textarea class="field" id="markdownInput" placeholder="# Hello Markdown&#10;&#10;Write your content here..." style="min-height:420px;"></textarea>
+                        </div>
+                        <div class="panel">
+                            <div class="panel-label">
+                                <span>Live Preview</span>
+                                <span class="mini-actions">
+                                    <button class="btn-mini" id="copyMarkdownHtmlButton"><i class="fas fa-copy"></i> Copy HTML</button>
+                                    <button class="btn-mini" id="downloadMarkdownHtmlButton"><i class="fas fa-download"></i> Download HTML</button>
+                                </span>
+                            </div>
+                            <div class="md-preview" id="markdownPreview"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="wrap footer-inner">
+            <div class="footer-brand">
+                <span class="logo">NB</span>
+                <div class="fb-text"><b>NanaBoison Utilities</b><span>Useful tools for developers and creators.</span></div>
+            </div>
+            <nav class="footer-links">
+                <a href="#/">Tools</a>
+                <a href="#/about">About</a>
+            </nav>
+        </div>
+    </footer>
+
+    <div id="toast"><i class="fas fa-circle-info"></i><span id="toastText"></span></div>
 
     <script>
-        // --- Global DOM References ---
-        const messageBox = document.getElementById('messageBox');
-        const tabCsvToJson = document.getElementById('tabCsvToJson');
-        const tabJsonToCsv = document.getElementById('tabJsonToCsv');
-        const tabJsonBeautifier = document.getElementById('tabJsonBeautifier');
-        const tabJsonStringify = document.getElementById('tabJsonStringify');
-        const tabTextDelimiter = document.getElementById('tabTextDelimiter');
-        const tabQrCodeGenerator = document.getElementById('tabQrCodeGenerator');
-        const tabMarkdownViewer = document.getElementById('tabMarkdownViewer');
-        const tabEpubToPdf = document.getElementById('tabEpubToPdf');
+        // ================= Tool metadata =================
+        const TOOLS = [
+            { id: 'csv-to-json', title: 'CSV to JSON', desc: 'Convert CSV files to JSON format quickly and easily.', icon: 'fa-file-csv', color: 'blue' },
+            { id: 'json-to-csv', title: 'JSON to CSV', desc: 'Convert JSON data to CSV format with ease.', icon: 'fa-table', color: 'green' },
+            { id: 'json-lint', title: 'JSON Lint & Beautify', desc: 'Validate and format your JSON for better readability.', icon: 'fa-code', color: 'purple' },
+            { id: 'json-string', title: 'JSON to String / String to JSON', desc: 'Convert between JSON and string formats in seconds.', icon: 'fa-exchange-alt', color: 'amber' },
+            { id: 'delimiter', title: 'Delimiter Replacer', desc: 'Replace delimiters in your text with ease.', icon: 'fa-list', color: 'green' },
+            { id: 'qr', title: 'QR Code Generator', desc: 'Create QR codes for your text, links or data.', icon: 'fa-qrcode', color: 'purple' },
+            { id: 'markdown', title: 'Markdown Live Preview', desc: 'Write Markdown and see the result with HTML export.', icon: 'fa-markdown', color: 'green', brand: true },
+        ];
 
-        const csvToJsonSection = document.getElementById('csvToJsonSection');
-        const jsonToCsvSection = document.getElementById('jsonToCsvSection');
-        const jsonBeautifierSection = document.getElementById('jsonBeautifierSection');
-        const jsonStringifySection = document.getElementById('jsonStringifySection');
-        const textDelimiterSection = document.getElementById('textDelimiterSection');
-        const qrCodeGeneratorSection = document.getElementById('qrCodeGeneratorSection');
-        const markdownViewerSection = document.getElementById('markdownViewerSection');
-        const epubToPdfSection = document.getElementById('epubToPdfSection');
+        // ================= Card rendering =================
+        const toolsGrid = document.getElementById('toolsGrid');
+        TOOLS.forEach(t => {
+            const iconClass = (t.brand ? 'fab ' : 'fas ') + t.icon;
+            const html = `
+                <button class="tool-card" data-tool="${t.id}" data-search="${(t.title + ' ' + t.desc).toLowerCase()}" aria-label="Open ${t.title}">
+                    <span class="icon-tile ${t.color}"><i class="${iconClass}"></i></span>
+                    <span class="tool-card-title">${t.title}</span>
+                    <span class="tool-card-desc">${t.desc}</span>
+                    <span class="tool-card-arrow"><i class="fas fa-arrow-right"></i></span>
+                </button>`;
+            toolsGrid.insertAdjacentHTML('beforeend', html);
+        });
+        toolsGrid.addEventListener('click', (e) => {
+            const card = e.target.closest('.tool-card');
+            if (card) navigate('#/tool/' + card.dataset.tool);
+        });
 
-        const downloadBeautifiedJsonButton = document.getElementById('downloadBeautifiedJsonButton');
-        const copyBeautifiedJsonButton = document.getElementById('copyBeautifiedJsonButton');
-        
-        const jsonToStringButton = document.getElementById('jsonToStringButton');
-        const stringToJsonButton = document.getElementById('stringToJsonButton');
-        const copyStringifyResultButton = document.getElementById('copyStringifyResultButton');
-        const stringifyInput = document.getElementById('stringifyInput');
-        const stringifyOutput = document.getElementById('stringifyOutput');
+        // ================= Routing =================
+        const views = {
+            home: document.getElementById('view-home'),
+            about: document.getElementById('view-about'),
+            tool: document.getElementById('view-tool'),
+        };
+        const navLinks = document.querySelectorAll('.nav-link');
 
-        const downloadReplacedTextButton = document.getElementById('downloadReplacedTextButton');
-        const copyReplacedTextButton = document.getElementById('copyReplacedTextButton');
-        const downloadQrCodeButton = document.getElementById('downloadQrCodeButton');
-        const qrCodeCanvas = document.getElementById('qrCodeCanvas');
-        const qrCodePlaceholder = document.getElementById('qrCodePlaceholder');
-        const markdownPreview = document.getElementById('markdownPreview');
+        function navigate(hash) {
+            if (location.hash === hash) route();
+            else location.hash = hash;
+        }
 
-        // EPUB to PDF API endpoint - REPLACE THIS WITH YOUR RENDER.COM URL AFTER DEPLOYMENT
-        const EPUB_API_URL = 'https://nb-utils.onrender.com/convert';
-        const EPUB_HEALTH_URL = 'https://nb-utils.onrender.com/health';
-        
-        let currentPdfBlob = null;
-        let serverStatus = 'unknown'; // 'healthy', 'waking', 'down', 'unknown'
+        function setActiveView(name) {
+            Object.values(views).forEach(v => v.classList.remove('active'));
+            views[name].classList.add('active');
+        }
 
-        // Wake up the server on page load
-        async function wakeUpServer() {
-            try {
-                console.log('Checking server health...');
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-                
-                const response = await fetch(EPUB_HEALTH_URL, {
-                    method: 'GET',
-                    signal: controller.signal
-                });
-                
-                clearTimeout(timeoutId);
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    serverStatus = 'healthy';
-                    console.log('Server is healthy:', data);
-                    return true;
-                }
-            } catch (error) {
-                if (error.name === 'AbortError') {
-                    console.log('Server is waking up (timeout after 10s)...');
-                    serverStatus = 'waking';
-                } else {
-                    console.log('Server health check failed:', error.message);
-                    serverStatus = 'down';
-                }
-                return false;
+        function setNav(name) {
+            navLinks.forEach(l => l.classList.toggle('active', l.dataset.nav === name));
+        }
+
+        function route() {
+            const h = location.hash || '#/';
+            if (h.startsWith('#/tool/')) {
+                const id = h.slice('#/tool/'.length);
+                if (showTool(id)) { setActiveView('tool'); setNav('tools'); }
+                else { location.hash = '#/'; return; }
+            } else if (h === '#/about') {
+                setActiveView('about'); setNav('about');
+            } else {
+                setActiveView('home'); setNav('tools');
             }
+            window.scrollTo({ top: 0, behavior: 'auto' });
         }
 
-        // Call wake up on page load
-        if (EPUB_API_URL !== 'https://nb-utils.onrender.com/convert') {
-            wakeUpServer();
+        function showTool(id) {
+            const ws = document.getElementById('ws-' + id);
+            if (!ws) return false;
+            document.querySelectorAll('.tool-workspace').forEach(w => w.classList.remove('active'));
+            ws.classList.add('active');
+            resetTools();
+            return true;
         }
 
-        // --- Utility Functions ---
+        window.addEventListener('hashchange', route);
 
-        function adjustTextareaHeight(textarea) {
-            textarea.style.height = 'auto';
-            textarea.style.height = (textarea.scrollHeight + 2) + 'px';
+        // ================= Search / filter =================
+        const heroSearch = document.getElementById('heroSearch');
+        const headerSearch = document.getElementById('headerSearch');
+        const noResults = document.getElementById('noResults');
+
+        function applyFilter(q) {
+            q = q.trim().toLowerCase();
+            let any = false;
+            document.querySelectorAll('.tool-card').forEach(c => {
+                const match = !q || c.dataset.search.includes(q);
+                c.style.display = match ? '' : 'none';
+                if (match) any = true;
+            });
+            noResults.style.display = any ? 'none' : 'block';
         }
 
-        function showMessage(message, type) {
-            messageBox.textContent = message;
-            messageBox.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800', 'bg-blue-100', 'text-blue-800');
-            if (type === 'success') messageBox.classList.add('bg-green-100', 'text-green-800');
-            else if (type === 'error') messageBox.classList.add('bg-red-100', 'text-red-800');
-            else messageBox.classList.add('bg-blue-100', 'text-blue-800');
-            messageBox.classList.remove('hidden');
+        function firstVisibleTool() {
+            return [...document.querySelectorAll('.tool-card')].find(c => c.style.display !== 'none');
         }
 
-        function hideMessageBox() {
-            messageBox.classList.add('hidden');
+        heroSearch.addEventListener('input', (e) => { headerSearch.value = e.target.value; applyFilter(e.target.value); });
+        headerSearch.addEventListener('input', (e) => {
+            if ((location.hash || '#/') !== '#/') navigate('#/');
+            heroSearch.value = e.target.value;
+            applyFilter(e.target.value);
+        });
+        function openFirstMatch() {
+            const first = firstVisibleTool();
+            if (first) navigate('#/tool/' + first.dataset.tool);
+        }
+        heroSearch.addEventListener('keydown', (e) => { if (e.key === 'Enter') openFirstMatch(); });
+        headerSearch.addEventListener('keydown', (e) => { if (e.key === 'Enter') { navigate('#/'); setTimeout(openFirstMatch, 0); } });
+        document.getElementById('heroSearchGo').addEventListener('click', openFirstMatch);
+        document.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                if ((location.hash || '#/') !== '#/') navigate('#/');
+                (window.matchMedia('(max-width: 720px)').matches ? heroSearch : headerSearch).focus();
+            }
+        });
+
+        // ================= Utilities =================
+        let toastTimer = null;
+        const toastEl = document.getElementById('toast');
+        const toastText = document.getElementById('toastText');
+        const toastIcon = toastEl.querySelector('i');
+
+        function showMessage(message, type = 'info') {
+            toastText.textContent = message;
+            toastEl.className = 'show ' + type;
+            const icon = type === 'success' ? 'fa-circle-check' : type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-info';
+            toastIcon.className = 'fas ' + icon;
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => { toastEl.classList.remove('show'); }, 3200);
         }
 
         function downloadText(textContent, filename, mimeType = 'text/plain') {
             const blob = new Blob([textContent], { type: `${mimeType};charset=utf-8;` });
+            const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
-            if (link.download !== undefined) {
-                const url = URL.createObjectURL(blob);
-                link.setAttribute('href', url);
-                link.setAttribute('download', filename);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-            } else {
-                showMessage('Your browser does not support downloads.', 'info');
-            }
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         }
 
         function copyToClipboard(text, successMsg) {
+            if (!text) { showMessage('Nothing to copy yet.', 'info'); return; }
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text)
+                    .then(() => showMessage(successMsg, 'success'))
+                    .catch(() => fallbackCopy(text, successMsg));
+            } else {
+                fallbackCopy(text, successMsg);
+            }
+        }
+        function fallbackCopy(text, successMsg) {
             const temp = document.createElement('textarea');
             temp.value = text;
+            temp.style.position = 'fixed';
+            temp.style.opacity = '0';
             document.body.appendChild(temp);
             temp.select();
-            try {
-                document.execCommand('copy');
-                showMessage(successMsg, 'success');
-            } catch (err) {
-                showMessage('Failed to copy.', 'error');
-            }
+            try { document.execCommand('copy'); showMessage(successMsg, 'success'); }
+            catch (err) { showMessage('Failed to copy.', 'error'); }
             document.body.removeChild(temp);
         }
 
-        function switchTab(activeTabButton, activeSection) {
-            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-            activeTabButton.classList.add('active');
-            document.querySelectorAll('.converter-section').forEach(section => section.classList.add('hidden'));
-            activeSection.classList.remove('hidden');
-            hideMessageBox();
+        function setupDropzone(zoneId, inputId, onFile) {
+            const zone = document.getElementById(zoneId);
+            const input = document.getElementById(inputId);
+            zone.addEventListener('click', () => input.click());
+            zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('drag'); });
+            zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                zone.classList.remove('drag');
+                if (e.dataTransfer.files.length) {
+                    try { input.files = e.dataTransfer.files; } catch (err) {}
+                    onFile(e.dataTransfer.files[0]);
+                }
+            });
+            input.addEventListener('change', () => { if (input.files.length) onFile(input.files[0]); });
+        }
 
-            // Resets
+        // Reset all tool inputs/outputs when opening a workspace
+        function resetTools() {
             document.getElementById('csvFileInput').value = '';
+            document.getElementById('csvFileName').classList.add('hidden');
             document.getElementById('convertCsvToJsonButton').disabled = true;
-            document.getElementById('jsonOutputContainer').classList.add('hidden');
             document.getElementById('jsonOutput').value = '';
+            copyJsonBtn.classList.add('hidden'); downloadJsonBtn.classList.add('hidden');
+
+            document.getElementById('jsonToCsvInput').value = '';
             document.getElementById('jsonFileInput').value = '';
-            document.getElementById('convertJsonToCsvButton').disabled = true;
-            
+            document.getElementById('jsonFileName').classList.add('hidden');
+            document.getElementById('csvOutput').value = '';
+            copyCsvBtn.classList.add('hidden'); downloadCsvBtn.classList.add('hidden');
+
             document.getElementById('jsonInputToBeautify').value = '';
             document.getElementById('beautifiedJsonOutput').value = '';
-            document.getElementById('beautifiedJsonOutput').style.height = '350px';
-            downloadBeautifiedJsonButton.classList.add('hidden');
-            copyBeautifiedJsonButton.classList.add('hidden');
+            copyBeautifiedJsonButton.classList.add('hidden'); downloadBeautifiedJsonButton.classList.add('hidden');
 
-            stringifyInput.value = '';
-            stringifyOutput.value = '';
-            stringifyOutput.style.height = '350px';
+            stringifyInput.value = ''; stringifyOutput.value = '';
             copyStringifyResultButton.classList.add('hidden');
-            
+
             document.getElementById('textInputToReplace').value = '';
             document.getElementById('oldDelimiterInput').value = '';
             document.getElementById('newDelimiterInput').value = '';
             document.getElementById('replacedTextOutput').value = '';
-            document.getElementById('replacedTextOutput').style.height = '350px';
-            downloadReplacedTextButton.classList.add('hidden');
-            copyReplacedTextButton.classList.add('hidden');
-            
+            copyReplacedTextButton.classList.add('hidden'); downloadReplacedTextButton.classList.add('hidden');
+
             document.getElementById('qrCodeInput').value = '';
             qrCodeCanvas.classList.add('hidden');
             qrCodePlaceholder.classList.remove('hidden');
             downloadQrCodeButton.classList.add('hidden');
-            
+
             document.getElementById('markdownInput').value = '';
             markdownPreview.innerHTML = '';
-            
-            document.getElementById('epubFileInput').value = '';
-            document.getElementById('convertEpubToPdfButton').disabled = true;
-            document.getElementById('epubConversionProgress').classList.add('hidden');
-            document.getElementById('epubOutputContainer').classList.add('hidden');
-            document.getElementById('epubProgressBar').style.width = '0%';
-            currentPdfBlob = null;
-            updateServerStatus();
         }
 
-        // Update server status indicator
-        function updateServerStatus() {
-            const indicator = document.getElementById('serverStatusIndicator');
-            const icon = document.getElementById('serverStatusIcon').querySelector('div');
-            const text = document.getElementById('serverStatusText');
-            
-            // Only show in EPUB to PDF section
-            const isEpubSection = !document.getElementById('epubToPdfSection').classList.contains('hidden');
-            
-            if (!isEpubSection || EPUB_API_URL === 'https://nb-utils.onrender.com/convert') {
-                indicator.classList.add('hidden');
-                return;
-            }
-            
-            indicator.classList.remove('hidden');
-            
-            if (serverStatus === 'healthy') {
-                indicator.className = 'mb-6 p-4 rounded-xl border-2 border-green-300 bg-green-50';
-                icon.className = 'w-3 h-3 rounded-full bg-green-500 animate-pulse';
-                text.textContent = 'Server Ready';
-                text.className = 'text-sm font-semibold text-green-700';
-            } else if (serverStatus === 'waking') {
-                indicator.className = 'mb-6 p-4 rounded-xl border-2 border-yellow-300 bg-yellow-50';
-                icon.className = 'w-3 h-3 rounded-full bg-yellow-500 animate-pulse';
-                text.textContent = 'Server Waking Up... (may take 30-60 seconds)';
-                text.className = 'text-sm font-semibold text-yellow-700';
-            } else if (serverStatus === 'down') {
-                indicator.className = 'mb-6 p-4 rounded-xl border-2 border-red-300 bg-red-50';
-                icon.className = 'w-3 h-3 rounded-full bg-red-500';
-                text.textContent = 'Server Unavailable - Check your API URL';
-                text.className = 'text-sm font-semibold text-red-700';
-            } else {
-                indicator.className = 'mb-6 p-4 rounded-xl border-2 border-gray-300 bg-gray-50';
-                icon.className = 'w-3 h-3 rounded-full bg-gray-400 animate-pulse';
-                text.textContent = 'Checking Server Status...';
-                text.className = 'text-sm font-semibold text-gray-700';
-            }
-        }
+        // ================= CSV to JSON =================
+        const copyJsonBtn = document.getElementById('copyJsonBtn');
+        const downloadJsonBtn = document.getElementById('downloadJsonBtn');
 
-        // --- CSV to JSON ---
-        document.getElementById('csvFileInput').addEventListener('change', () => {
-            document.getElementById('convertCsvToJsonButton').disabled = document.getElementById('csvFileInput').files.length === 0;
-            hideMessageBox();
-            document.getElementById('jsonOutputContainer').classList.add('hidden');
+        setupDropzone('csvDropzone', 'csvFileInput', (file) => {
+            const nameEl = document.getElementById('csvFileName');
+            nameEl.textContent = file.name;
+            nameEl.classList.remove('hidden');
+            document.getElementById('convertCsvToJsonButton').disabled = false;
         });
 
         document.getElementById('convertCsvToJsonButton').addEventListener('click', () => {
             const file = document.getElementById('csvFileInput').files[0];
+            if (!file) return showMessage('Choose a CSV file first.', 'info');
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
                     const res = convertCsvToJson(e.target.result);
                     document.getElementById('jsonOutput').value = JSON.stringify(res, null, 2);
-                    document.getElementById('jsonOutputContainer').classList.remove('hidden');
+                    copyJsonBtn.classList.remove('hidden');
+                    downloadJsonBtn.classList.remove('hidden');
                     showMessage('Converted successfully!', 'success');
                 } catch (err) { showMessage(err.message, 'error'); }
             };
             reader.readAsText(file);
         });
-
-        document.getElementById('downloadJsonButton').addEventListener('click', () => {
-            downloadText(document.getElementById('jsonOutput').value, 'data.json', 'application/json');
-        });
+        copyJsonBtn.addEventListener('click', () => copyToClipboard(document.getElementById('jsonOutput').value, 'JSON copied to clipboard!'));
+        downloadJsonBtn.addEventListener('click', () => downloadText(document.getElementById('jsonOutput').value, 'data.json', 'application/json'));
 
         function convertCsvToJson(csvString) {
-            const lines = csvString.split(/\r?\n/).filter(line => line.trim() !== '');
-            if (lines.length === 0) return [];
-            const headers = parseCsvLine(lines[0]);
+            const rows = parseCsv(csvString).filter(row => row.some(field => field.trim() !== ''));
+            if (rows.length === 0) return [];
+            const headers = rows[0].map(h => h.trim());
             const jsonArray = [];
-            for (let i = 1; i < lines.length; i++) {
-                const rowValues = parseCsvLine(lines[i]);
+            for (let i = 1; i < rows.length; i++) {
+                const rowValues = rows[i];
                 const obj = {};
-                headers.forEach((h, idx) => obj[h] = rowValues[idx] || '');
+                headers.forEach((h, idx) => obj[h] = rowValues[idx] !== undefined ? rowValues[idx] : '');
                 jsonArray.push(obj);
             }
             return jsonArray;
         }
 
-        function parseCsvLine(line) {
-            const fields = [];
-            let inQuote = false, cur = '';
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                if (char === '"') {
-                    if (inQuote && line[i+1] === '"') { cur += '"'; i++; }
-                    else inQuote = !inQuote;
-                } else if (char === ',' && !inQuote) { fields.push(cur.trim()); cur = ''; }
-                else cur += char;
+        // Parses an entire CSV string into rows of fields. Handles quoted fields
+        // containing commas, newlines, and escaped double-quotes ("").
+        function parseCsv(csvString) {
+            const rows = [];
+            let fields = [], cur = '', inQuote = false;
+            for (let i = 0; i < csvString.length; i++) {
+                const char = csvString[i];
+                if (inQuote) {
+                    if (char === '"') {
+                        if (csvString[i + 1] === '"') { cur += '"'; i++; }
+                        else inQuote = false;
+                    } else { cur += char; }
+                } else if (char === '"') {
+                    inQuote = true;
+                } else if (char === ',') {
+                    fields.push(cur); cur = '';
+                } else if (char === '\n' || char === '\r') {
+                    if (char === '\r' && csvString[i + 1] === '\n') i++;
+                    fields.push(cur); cur = '';
+                    rows.push(fields); fields = [];
+                } else { cur += char; }
             }
-            fields.push(cur.trim());
-            return fields;
+            if (cur !== '' || fields.length > 0) { fields.push(cur); rows.push(fields); }
+            return rows;
         }
 
-        // --- JSON to CSV ---
-        document.getElementById('jsonFileInput').addEventListener('change', () => {
-            document.getElementById('convertJsonToCsvButton').disabled = document.getElementById('jsonFileInput').files.length === 0;
-            hideMessageBox();
+        // ================= JSON to CSV =================
+        const copyCsvBtn = document.getElementById('copyCsvBtn');
+        const downloadCsvBtn = document.getElementById('downloadCsvBtn');
+
+        setupDropzone('jsonDropzone', 'jsonFileInput', (file) => {
+            const nameEl = document.getElementById('jsonFileName');
+            nameEl.textContent = file.name;
+            nameEl.classList.remove('hidden');
         });
 
         document.getElementById('convertJsonToCsvButton').addEventListener('click', () => {
+            const raw = document.getElementById('jsonToCsvInput').value.trim();
+            if (raw) { processJsonToCsv(raw); return; }
             const file = document.getElementById('jsonFileInput').files[0];
+            if (!file) return showMessage('Paste JSON or choose a file.', 'info');
             const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    const csv = convertJsonToCsv(data);
-                    downloadText(csv, 'data.csv', 'text/csv');
-                    showMessage('CSV Downloading...', 'success');
-                } catch (err) { showMessage('Invalid JSON file', 'error'); }
-            };
+            reader.onload = (e) => processJsonToCsv(e.target.result);
             reader.readAsText(file);
         });
 
+        function processJsonToCsv(raw) {
+            let data;
+            try { data = JSON.parse(raw); }
+            catch (err) { return showMessage('Invalid JSON.', 'error'); }
+            try {
+                const csv = convertJsonToCsv(data);
+                if (!csv) return showMessage('No data to convert (empty JSON array).', 'info');
+                document.getElementById('csvOutput').value = csv;
+                copyCsvBtn.classList.remove('hidden');
+                downloadCsvBtn.classList.remove('hidden');
+                showMessage('Converted successfully!', 'success');
+            } catch (err) { showMessage(err.message, 'error'); }
+        }
+        copyCsvBtn.addEventListener('click', () => copyToClipboard(document.getElementById('csvOutput').value, 'CSV copied to clipboard!'));
+        downloadCsvBtn.addEventListener('click', () => downloadText(document.getElementById('csvOutput').value, 'data.csv', 'text/csv'));
+
         function convertJsonToCsv(jsonData) {
-            if (!jsonData.length) return '';
+            if (jsonData && !Array.isArray(jsonData) && typeof jsonData === 'object') jsonData = [jsonData];
+            if (!Array.isArray(jsonData)) throw new Error('JSON must be an array of objects (or a single object).');
+            if (jsonData.length === 0) return '';
+            if (!jsonData.every(item => item && typeof item === 'object' && !Array.isArray(item))) {
+                throw new Error('Each item in the JSON array must be an object.');
+            }
             const keys = Array.from(new Set(jsonData.flatMap(Object.keys)));
             const rows = [keys.join(',')];
             jsonData.forEach(item => {
@@ -795,244 +1125,131 @@
             return rows.join('\n');
         }
 
-        // --- JSON Lint ---
+        // ================= JSON Lint & Beautify =================
         document.getElementById('beautifyJsonButton').addEventListener('click', () => {
             const val = document.getElementById('jsonInputToBeautify').value.trim();
-            hideMessageBox();
-            if (!val) { showMessage('Please paste JSON first', 'info'); return; }
+            if (!val) return showMessage('Please paste JSON first.', 'info');
             try {
                 const parsed = JSON.parse(val);
                 document.getElementById('beautifiedJsonOutput').value = JSON.stringify(parsed, null, 2);
-                adjustTextareaHeight(document.getElementById('beautifiedJsonOutput'));
-                downloadBeautifiedJsonButton.classList.remove('hidden');
                 copyBeautifiedJsonButton.classList.remove('hidden');
-                showMessage('JSON Beautified successfully!', 'success');
+                downloadBeautifiedJsonButton.classList.remove('hidden');
+                showMessage('JSON beautified successfully!', 'success');
             } catch (err) { showMessage(err.message, 'error'); }
         });
-
+        const copyBeautifiedJsonButton = document.getElementById('copyBeautifiedJsonButton');
+        const downloadBeautifiedJsonButton = document.getElementById('downloadBeautifiedJsonButton');
+        copyBeautifiedJsonButton.addEventListener('click', () => copyToClipboard(document.getElementById('beautifiedJsonOutput').value, 'JSON copied to clipboard!'));
         downloadBeautifiedJsonButton.addEventListener('click', () => downloadText(document.getElementById('beautifiedJsonOutput').value, 'pretty.json', 'application/json'));
-        copyBeautifiedJsonButton.addEventListener('click', () => copyToClipboard(document.getElementById('beautifiedJsonOutput').value, 'JSON Copied to clipboard!'));
 
-        // --- JSON Stringify (JSON <-> String) ---
-        jsonToStringButton.addEventListener('click', () => {
+        // ================= JSON <-> String =================
+        const stringifyInput = document.getElementById('stringifyInput');
+        const stringifyOutput = document.getElementById('stringifyOutput');
+        const copyStringifyResultButton = document.getElementById('copyStringifyResultButton');
+
+        document.getElementById('jsonToStringButton').addEventListener('click', () => {
             const val = stringifyInput.value.trim();
-            hideMessageBox();
-            if (!val) return showMessage('Please paste JSON first', 'info');
+            if (!val) return showMessage('Please paste JSON first.', 'info');
             try {
                 const parsed = JSON.parse(val);
                 stringifyOutput.value = JSON.stringify(JSON.stringify(parsed));
-                adjustTextareaHeight(stringifyOutput);
                 copyStringifyResultButton.classList.remove('hidden');
                 showMessage('Converted to escaped string!', 'success');
-            } catch (err) { showMessage('Invalid JSON Object', 'error'); }
+            } catch (err) { showMessage('Invalid JSON object.', 'error'); }
         });
-
-        stringToJsonButton.addEventListener('click', () => {
+        document.getElementById('stringToJsonButton').addEventListener('click', () => {
             const val = stringifyInput.value.trim();
-            hideMessageBox();
-            if (!val) return showMessage('Please paste escaped string first', 'info');
+            if (!val) return showMessage('Please paste an escaped string first.', 'info');
             try {
                 let result = val;
                 if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
-                   result = JSON.parse(val);
+                    result = JSON.parse(val);
                 }
                 const parsedObj = JSON.parse(result);
                 stringifyOutput.value = JSON.stringify(parsedObj, null, 2);
-                adjustTextareaHeight(stringifyOutput);
                 copyStringifyResultButton.classList.remove('hidden');
                 showMessage('Parsed to JSON object!', 'success');
-            } catch (err) { showMessage('Invalid escaped string or JSON', 'error'); }
+            } catch (err) { showMessage('Invalid escaped string or JSON.', 'error'); }
         });
+        copyStringifyResultButton.addEventListener('click', () => copyToClipboard(stringifyOutput.value, 'Result copied to clipboard!'));
 
-        copyStringifyResultButton.addEventListener('click', () => {
-            copyToClipboard(stringifyOutput.value, 'Result Copied to clipboard!');
-        });
-
-        // --- Text Delimiter ---
+        // ================= Delimiter Replacer =================
+        const copyReplacedTextButton = document.getElementById('copyReplacedTextButton');
+        const downloadReplacedTextButton = document.getElementById('downloadReplacedTextButton');
         document.getElementById('replaceDelimiterButton').addEventListener('click', () => {
             const input = document.getElementById('textInputToReplace').value;
             const oldD = document.getElementById('oldDelimiterInput').value;
             const newD = document.getElementById('newDelimiterInput').value;
-            hideMessageBox();
-            if (!input) return showMessage('Please paste text', 'info');
-            if (!oldD) return showMessage('Please enter old delimiter', 'error');
-            const result = input.replaceAll(oldD, newD);
-            document.getElementById('replacedTextOutput').value = result;
-            adjustTextareaHeight(document.getElementById('replacedTextOutput'));
-            downloadReplacedTextButton.classList.remove('hidden');
+            if (!input) return showMessage('Please paste text.', 'info');
+            if (!oldD) return showMessage('Please enter an old delimiter.', 'error');
+            document.getElementById('replacedTextOutput').value = input.split(oldD).join(newD);
             copyReplacedTextButton.classList.remove('hidden');
+            downloadReplacedTextButton.classList.remove('hidden');
             showMessage('Delimiter replaced successfully!', 'success');
         });
-
+        copyReplacedTextButton.addEventListener('click', () => copyToClipboard(document.getElementById('replacedTextOutput').value, 'Text copied to clipboard!'));
         downloadReplacedTextButton.addEventListener('click', () => downloadText(document.getElementById('replacedTextOutput').value, 'replaced.txt'));
-        copyReplacedTextButton.addEventListener('click', () => copyToClipboard(document.getElementById('replacedTextOutput').value, 'Text Copied to clipboard!'));
 
-        // --- QR Code ---
-        let qr = new QRious({ element: qrCodeCanvas, size: 256 });
+        // ================= QR Code Generator =================
+        const qrCodeCanvas = document.getElementById('qrCodeCanvas');
+        const qrCodePlaceholder = document.getElementById('qrCodePlaceholder');
+        const downloadQrCodeButton = document.getElementById('downloadQrCodeButton');
+        // Lazily create the QRious instance so a failed CDN load can't break the whole app.
+        let qr = null;
+        function getQr() {
+            if (qr) return qr;
+            if (typeof QRious === 'undefined') {
+                showMessage('QR code library failed to load. Check your connection.', 'error');
+                return null;
+            }
+            qr = new QRious({ element: qrCodeCanvas, size: 256, foreground: '#0f172a', background: '#ffffff' });
+            return qr;
+        }
+
         document.getElementById('generateQrCodeButton').addEventListener('click', () => {
             const val = document.getElementById('qrCodeInput').value.trim();
-            hideMessageBox();
-            if (!val) return showMessage('Please enter text or link', 'error');
-            qr.set({ value: val, foreground: '#667eea' });
+            if (!val) return showMessage('Please enter text or a link.', 'error');
+            const q = getQr();
+            if (!q) return;
+            q.set({ value: val });
             qrCodeCanvas.classList.remove('hidden');
             qrCodePlaceholder.classList.add('hidden');
             downloadQrCodeButton.classList.remove('hidden');
-            showMessage('QR Code Generated successfully!', 'success');
+            showMessage('QR code generated!', 'success');
         });
-
         downloadQrCodeButton.addEventListener('click', () => {
             const link = document.createElement('a');
-            link.href = qrCodeCanvas.toDataURL("image/png");
+            link.href = qrCodeCanvas.toDataURL('image/png');
             link.download = 'qrcode.png';
             link.click();
         });
 
-        // --- Markdown Viewer ---
-        document.getElementById('markdownInput').addEventListener('input', () => {
-            markdownPreview.innerHTML = marked.parse(document.getElementById('markdownInput').value);
+        // ================= Markdown Live Preview =================
+        const markdownPreview = document.getElementById('markdownPreview');
+        function escapeHtml(s) {
+            return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+        function renderMarkdown(mdText) {
+            // Fall back to escaped plain text if the markdown library failed to load.
+            if (typeof marked === 'undefined') return '<pre>' + escapeHtml(mdText) + '</pre>';
+            const rawHtml = marked.parse(mdText);
+            return (typeof DOMPurify !== 'undefined') ? DOMPurify.sanitize(rawHtml) : rawHtml;
+        }
+        document.getElementById('markdownInput').addEventListener('input', (e) => {
+            markdownPreview.innerHTML = renderMarkdown(e.target.value);
         });
-
         document.getElementById('copyMarkdownHtmlButton').addEventListener('click', () => {
-            if (!markdownPreview.innerHTML) return showMessage('Please write markdown first', 'info');
-            copyToClipboard(markdownPreview.innerHTML, 'HTML Copied to clipboard!');
+            if (!markdownPreview.innerHTML) return showMessage('Please write markdown first.', 'info');
+            copyToClipboard(markdownPreview.innerHTML, 'HTML copied to clipboard!');
         });
-
         document.getElementById('downloadMarkdownHtmlButton').addEventListener('click', () => {
-            if (!markdownPreview.innerHTML) return showMessage('Please write markdown first', 'info');
-            const fullHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Rendered Markdown</title><style>body{font-family:sans-serif;padding:2em;}</style></head><body>${markdownPreview.innerHTML}</body></html>`;
+            if (!markdownPreview.innerHTML) return showMessage('Please write markdown first.', 'info');
+            const fullHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Rendered Markdown</title><style>body{font-family:sans-serif;padding:2em;max-width:800px;margin:0 auto;}</style></head><body>${markdownPreview.innerHTML}</body></html>`;
             downloadText(fullHtml, 'rendered.html', 'text/html');
         });
 
-        // --- Tab Listeners ---
-        tabCsvToJson.addEventListener('click', () => switchTab(tabCsvToJson, csvToJsonSection));
-        tabJsonToCsv.addEventListener('click', () => switchTab(tabJsonToCsv, jsonToCsvSection));
-        tabJsonBeautifier.addEventListener('click', () => switchTab(tabJsonBeautifier, jsonBeautifierSection));
-        tabJsonStringify.addEventListener('click', () => switchTab(tabJsonStringify, jsonStringifySection));
-        tabTextDelimiter.addEventListener('click', () => switchTab(tabTextDelimiter, textDelimiterSection));
-        tabQrCodeGenerator.addEventListener('click', () => switchTab(tabQrCodeGenerator, qrCodeGeneratorSection));
-        tabMarkdownViewer.addEventListener('click', () => switchTab(tabMarkdownViewer, markdownViewerSection));
-        tabEpubToPdf.addEventListener('click', () => switchTab(tabEpubToPdf, epubToPdfSection));
-
-        // --- EPUB to PDF Converter ---
-        document.getElementById('epubFileInput').addEventListener('change', () => {
-            const hasFile = document.getElementById('epubFileInput').files.length > 0;
-            document.getElementById('convertEpubToPdfButton').disabled = !hasFile;
-            hideMessageBox();
-            document.getElementById('epubOutputContainer').classList.add('hidden');
-            document.getElementById('epubConversionProgress').classList.add('hidden');
-        });
-
-        document.getElementById('convertEpubToPdfButton').addEventListener('click', async () => {
-            const fileInput = document.getElementById('epubFileInput');
-            const file = fileInput.files[0];
-            
-            if (!file) {
-                showMessage('Please select an EPUB file', 'error');
-                return;
-            }
-
-            // Check server status before conversion
-            if (serverStatus === 'waking') {
-                showMessage('Server is still waking up. Please wait 30-60 seconds and try again.', 'info');
-                return;
-            } else if (serverStatus === 'down') {
-                showMessage('Server is unavailable. Please check your configuration.', 'error');
-                return;
-            }
-
-            // Show progress
-            document.getElementById('epubConversionProgress').classList.remove('hidden');
-            document.getElementById('epubOutputContainer').classList.add('hidden');
-            document.getElementById('convertEpubToPdfButton').disabled = true;
-            hideMessageBox();
-
-            // Animate progress bar
-            const progressBar = document.getElementById('epubProgressBar');
-            const progressText = document.getElementById('epubProgressText');
-            progressBar.style.width = '30%';
-            progressText.textContent = 'Uploading EPUB file...';
-
-            try {
-                const formData = new FormData();
-                formData.append('file', file);
-
-                progressBar.style.width = '50%';
-                progressText.textContent = 'Converting to PDF... (this may take 1-3 minutes)';
-
-                const response = await fetch(EPUB_API_URL, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({ error: response.statusText }));
-                    throw new Error(errorData.error || `Conversion failed: ${response.statusText}`);
-                }
-
-                progressBar.style.width = '80%';
-                progressText.textContent = 'Preparing download...';
-
-                const blob = await response.blob();
-                currentPdfBlob = blob;
-
-                progressBar.style.width = '100%';
-                progressText.textContent = 'Complete!';
-
-                // Update server status to healthy after successful conversion
-                serverStatus = 'healthy';
-                updateServerStatus();
-
-                // Show output container
-                setTimeout(() => {
-                    document.getElementById('epubConversionProgress').classList.add('hidden');
-                    document.getElementById('epubOutputContainer').classList.remove('hidden');
-                    document.getElementById('epubFileName').textContent = file.name.replace('.epub', '.pdf');
-                    showMessage('EPUB converted successfully!', 'success');
-                    document.getElementById('convertEpubToPdfButton').disabled = false;
-                }, 500);
-
-            } catch (error) {
-                console.error('Conversion error:', error);
-                document.getElementById('epubConversionProgress').classList.add('hidden');
-                document.getElementById('convertEpubToPdfButton').disabled = false;
-                
-                let errorMessage = error.message;
-                if (errorMessage.includes('Failed to fetch')) {
-                    errorMessage = 'Cannot connect to server. The server may be sleeping - please wait 60 seconds and try again.';
-                    serverStatus = 'waking';
-                    updateServerStatus();
-                    
-                    // Try to wake up server
-                    wakeUpServer().then(success => {
-                        if (success) {
-                            showMessage('Server is now ready! Please try converting again.', 'success');
-                        }
-                    });
-                }
-                
-                showMessage(`Conversion failed: ${errorMessage}`, 'error');
-            }
-        });
-
-        document.getElementById('downloadPdfButton').addEventListener('click', () => {
-            if (!currentPdfBlob) {
-                showMessage('No PDF available to download', 'error');
-                return;
-            }
-
-            const url = URL.createObjectURL(currentPdfBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            const originalName = document.getElementById('epubFileInput').files[0].name;
-            link.download = originalName.replace('.epub', '.pdf');
-            link.click();
-            URL.revokeObjectURL(url);
-            showMessage('PDF downloaded successfully!', 'success');
-        });
-
-        document.addEventListener('DOMContentLoaded', () => {
-            switchTab(tabCsvToJson, csvToJsonSection);
-        });
+        // ================= Init =================
+        route();
     </script>
 </body>
 </html>
