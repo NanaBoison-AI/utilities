@@ -347,6 +347,25 @@
         .field-group { flex: 1; min-width: 140px; }
         .field-group label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 8px; }
 
+        /* Delimiter presets & options */
+        .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+        .chip {
+            font-size: 12px; font-weight: 500;
+            padding: 5px 11px; border-radius: 999px;
+            background: var(--surface-3); color: var(--muted);
+            border: 1px solid var(--border);
+            transition: color 0.2s, border-color 0.2s, background 0.2s;
+        }
+        .chip:hover { color: var(--text); border-color: var(--border-strong); }
+        .chip.active { color: var(--blue); border-color: rgba(96,165,250,0.5); background: rgba(59,130,246,0.10); }
+        .delim-options {
+            display: flex; flex-wrap: wrap; align-items: center; gap: 10px 26px;
+            margin-top: 18px; font-size: 13px; color: var(--muted);
+        }
+        .check { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+        .check input { width: 15px; height: 15px; accent-color: #6366f1; cursor: pointer; }
+        .hint code { background: rgba(148,163,184,0.15); color: var(--text); padding: 1px 6px; border-radius: 5px; font-size: 12px; }
+
         /* Dropzone */
         .dropzone {
             border: 1.5px dashed var(--border-strong);
@@ -680,12 +699,12 @@
                 <div class="tool-workspace" id="ws-delimiter">
                     <div class="ws-head">
                         <span class="icon-tile green"><i class="fas fa-list"></i></span>
-                        <div><h1>Delimiter Replacer</h1><p>Replace delimiters in your text instantly.</p></div>
+                        <div><h1>Delimiter Replacer</h1><p>Split text on one delimiter and join it back with another.</p></div>
                     </div>
                     <div class="ws-grid">
                         <div class="panel">
                             <div class="panel-label"><span>Input Text</span></div>
-                            <textarea class="field" id="textInputToReplace" placeholder="apple|banana|cherry"></textarea>
+                            <textarea class="field" id="textInputToReplace" placeholder="142&#10;175&#10;147&#10;125"></textarea>
                         </div>
                         <div class="panel">
                             <div class="panel-label">
@@ -698,18 +717,37 @@
                             <textarea class="field" id="replacedTextOutput" readonly placeholder="Result will appear here..."></textarea>
                         </div>
                     </div>
-                    <div class="field-row" style="margin-top:20px;">
+                    <div class="field-row" style="margin-top:20px; align-items:flex-start;">
                         <div class="field-group">
                             <label for="oldDelimiterInput">Old Delimiter</label>
-                            <input type="text" class="field" id="oldDelimiterInput" placeholder="|">
+                            <input type="text" class="field" id="oldDelimiterInput" placeholder="\n">
+                            <div class="chips" data-target="oldDelimiterInput">
+                                <button type="button" class="chip" data-value="\n">New line</button>
+                                <button type="button" class="chip" data-value=",">Comma</button>
+                                <button type="button" class="chip" data-value="\t">Tab</button>
+                                <button type="button" class="chip" data-value="|">Pipe</button>
+                                <button type="button" class="chip" data-value=";">Semicolon</button>
+                            </div>
                         </div>
                         <div class="field-group">
                             <label for="newDelimiterInput">New Delimiter</label>
-                            <input type="text" class="field" id="newDelimiterInput" placeholder=",">
+                            <input type="text" class="field" id="newDelimiterInput" placeholder=", ">
+                            <div class="chips" data-target="newDelimiterInput">
+                                <button type="button" class="chip" data-value=", ">Comma + space</button>
+                                <button type="button" class="chip" data-value=",\n">Comma + new line</button>
+                                <button type="button" class="chip" data-value="\n">New line</button>
+                                <button type="button" class="chip" data-value="\t">Tab</button>
+                                <button type="button" class="chip" data-value="|">Pipe</button>
+                            </div>
                         </div>
-                        <div class="field-group" style="flex:0 0 auto;">
-                            <button class="btn btn-primary" id="replaceDelimiterButton"><i class="fas fa-sync"></i> Replace</button>
-                        </div>
+                    </div>
+                    <div class="delim-options">
+                        <label class="check"><input type="checkbox" id="delimTrimOption" checked> Trim spaces and skip empty items</label>
+                        <label class="check"><input type="checkbox" id="delimTrailingOption"> Add delimiter after the last item</label>
+                        <span class="hint">Tip: type <code>\n</code> for a new line and <code>\t</code> for a tab.</span>
+                    </div>
+                    <div class="ws-actions">
+                        <button class="btn btn-primary" id="replaceDelimiterButton"><i class="fas fa-sync"></i> Replace</button>
                     </div>
                 </div>
 
@@ -988,6 +1026,9 @@
             document.getElementById('textInputToReplace').value = '';
             document.getElementById('oldDelimiterInput').value = '';
             document.getElementById('newDelimiterInput').value = '';
+            document.getElementById('delimTrimOption').checked = true;
+            document.getElementById('delimTrailingOption').checked = false;
+            document.querySelectorAll('#ws-delimiter .chip').forEach(c => c.classList.remove('active'));
             document.getElementById('replacedTextOutput').value = '';
             copyReplacedTextButton.classList.add('hidden'); downloadReplacedTextButton.classList.add('hidden');
 
@@ -1176,13 +1217,48 @@
         // ================= Delimiter Replacer =================
         const copyReplacedTextButton = document.getElementById('copyReplacedTextButton');
         const downloadReplacedTextButton = document.getElementById('downloadReplacedTextButton');
+        // Turn escape sequences typed by the user (\n, \t, \r, \\) into real characters.
+        function unescapeDelimiter(s) {
+            return s.replace(/\\(n|r|t|\\)/g, (_, c) => ({ n: '\n', r: '\r', t: '\t', '\\': '\\' })[c]);
+        }
+
+        function replaceDelimiter(text, oldD, newD, { trim = true, trailing = false } = {}) {
+            // Normalize Windows/old-Mac line endings so "\n" matches every line break.
+            const normalize = s => s.replace(/\r\n?/g, '\n');
+            let items = normalize(text).split(normalize(oldD));
+            if (trim) items = items.map(s => s.trim()).filter(s => s !== '');
+            if (items.length === 0) return '';
+            // The final delimiter drops trailing whitespace (",\n" -> ","), unless it is only whitespace.
+            const last = trailing ? (newD.trimEnd() || newD) : '';
+            return items.join(newD) + last;
+        }
+
+        // Preset chips fill their input with the escaped delimiter and highlight the match.
+        document.querySelectorAll('#ws-delimiter .chips').forEach(group => {
+            const target = document.getElementById(group.dataset.target);
+            const sync = () => group.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c.dataset.value === target.value));
+            group.addEventListener('click', (e) => {
+                const chip = e.target.closest('.chip');
+                if (!chip) return;
+                target.value = chip.dataset.value;
+                sync();
+                target.focus();
+            });
+            target.addEventListener('input', sync);
+        });
+
         document.getElementById('replaceDelimiterButton').addEventListener('click', () => {
             const input = document.getElementById('textInputToReplace').value;
-            const oldD = document.getElementById('oldDelimiterInput').value;
-            const newD = document.getElementById('newDelimiterInput').value;
+            const oldD = unescapeDelimiter(document.getElementById('oldDelimiterInput').value);
+            const newD = unescapeDelimiter(document.getElementById('newDelimiterInput').value);
             if (!input) return showMessage('Please paste text.', 'info');
             if (!oldD) return showMessage('Please enter an old delimiter.', 'error');
-            document.getElementById('replacedTextOutput').value = input.split(oldD).join(newD);
+            const result = replaceDelimiter(input, oldD, newD, {
+                trim: document.getElementById('delimTrimOption').checked,
+                trailing: document.getElementById('delimTrailingOption').checked,
+            });
+            if (!result) return showMessage('Nothing left after skipping empty items.', 'info');
+            document.getElementById('replacedTextOutput').value = result;
             copyReplacedTextButton.classList.remove('hidden');
             downloadReplacedTextButton.classList.remove('hidden');
             showMessage('Delimiter replaced successfully!', 'success');
