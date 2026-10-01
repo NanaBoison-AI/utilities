@@ -202,10 +202,18 @@
         .section-head p { color: var(--muted); margin-top: 6px; font-size: 15px; }
 
         /* ---------- Tool cards ---------- */
+        /* Flex-wrap (not grid) so a short last row is centered, even when search filters the list. */
         .tools-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
+            --cols: 3;
+            --gap: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: var(--gap);
+        }
+        .tools-grid > .tool-card {
+            flex: 0 0 calc((100% - (var(--cols) - 1) * var(--gap)) / var(--cols));
+            min-width: 0;
         }
         .tool-card {
             position: relative;
@@ -549,7 +557,7 @@
 
         /* ---------- Responsive ---------- */
         @media (max-width: 1024px) {
-            .tools-grid { grid-template-columns: repeat(2, 1fr); }
+            .tools-grid { --cols: 2; }
         }
         @media (max-width: 720px) {
             .header-search { display: none; }
@@ -563,7 +571,7 @@
             .section { padding: 46px 0 10px; }
         }
         @media (max-width: 480px) {
-            .tools-grid { grid-template-columns: 1fr; }
+            .tools-grid { --cols: 1; }
             .wrap { padding: 0 18px; }
             .ws-head { flex-wrap: wrap; }
         }
