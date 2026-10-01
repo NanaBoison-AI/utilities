@@ -366,6 +366,38 @@
         .check input { width: 15px; height: 15px; accent-color: #6366f1; cursor: pointer; }
         .hint code { background: rgba(148,163,184,0.15); color: var(--text); padding: 1px 6px; border-radius: 5px; font-size: 12px; }
 
+        /* JSON Type Inspector */
+        .ws-options .opt-field {
+            background: rgba(8,11,20,0.55); border: 1px solid var(--border); border-radius: 8px;
+            color: var(--text); font-size: 13px; padding: 7px 10px; outline: none;
+        }
+        .ws-options .opt-field:focus { border-color: rgba(96,165,250,0.5); }
+        .ws-options input.opt-field { width: 130px; }
+        select.opt-field option { background: #0f1626; }
+        .seg { display: inline-flex; gap: 2px; padding: 3px; background: rgba(8,11,20,0.55); border: 1px solid var(--border); border-radius: 10px; }
+        .seg-btn { font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 7px; border: none; background: transparent; color: var(--muted); }
+        .seg-btn:hover { color: var(--text); }
+        .seg-btn.active { background: var(--surface-3); color: var(--text); }
+        .types-table { display: flex; flex-direction: column; gap: 6px; min-height: 300px; max-height: 460px; overflow-y: auto; }
+        .type-row {
+            display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 12px; align-items: center;
+            padding: 9px 12px; border-radius: 10px; font-size: 13px;
+            background: rgba(8,11,20,0.45); border: 1px solid var(--border);
+        }
+        .type-path { font-family: 'SFMono-Regular', ui-monospace, Menlo, Consolas, monospace; font-size: 12.5px; color: var(--blue); word-break: break-all; }
+        .type-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+        .type-chip {
+            font-family: 'SFMono-Regular', ui-monospace, Menlo, Consolas, monospace; font-size: 12px;
+            padding: 2px 8px; border-radius: 6px; border: 1px solid var(--border);
+        }
+        .type-chip.string  { color: var(--green);  background: rgba(16,185,129,0.10); }
+        .type-chip.number  { color: var(--amber);  background: rgba(245,158,11,0.10); }
+        .type-chip.boolean { color: var(--purple); background: rgba(139,92,246,0.12); }
+        .type-chip.null    { color: var(--muted);  background: rgba(148,163,184,0.10); }
+        .type-chip.object, .type-chip.array { color: var(--blue); background: rgba(59,130,246,0.10); }
+        .opt-tag { font-size: 11px; font-weight: 600; color: var(--amber); }
+        @media (max-width: 720px) { .type-row { grid-template-columns: 1fr; gap: 6px; } }
+
         /* JSON Compare results */
         .diff-summary { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
         .diff-pill {
@@ -773,6 +805,48 @@
                     </div>
                 </div>
 
+                <!-- JSON Type Inspector -->
+                <div class="tool-workspace" id="ws-json-types">
+                    <div class="ws-head">
+                        <span class="icon-tile purple"><i class="fas fa-sitemap"></i></span>
+                        <div><h1>JSON Type Inspector</h1><p>See the data type of every field and generate TypeScript types.</p></div>
+                    </div>
+                    <div class="ws-grid">
+                        <div class="panel">
+                            <div class="panel-label"><span>Input JSON</span></div>
+                            <textarea class="field" id="typesInput" placeholder='{"id":1,"name":"John","tags":["a","b"],"address":{"city":"Accra"}}'></textarea>
+                        </div>
+                        <div class="panel">
+                            <div class="panel-label">
+                                <span class="seg">
+                                    <button type="button" class="seg-btn active" id="typesTabTs">TypeScript</button>
+                                    <button type="button" class="seg-btn" id="typesTabFields">Field types</button>
+                                </span>
+                                <span class="mini-actions">
+                                    <button class="btn-mini hidden" id="copyTypesButton"><i class="fas fa-copy"></i> Copy</button>
+                                    <button class="btn-mini hidden" id="downloadTypesButton"><i class="fas fa-download"></i> Download .ts</button>
+                                </span>
+                            </div>
+                            <textarea class="field" id="typesTsOutput" readonly placeholder="Generated TypeScript will appear here..."></textarea>
+                            <div class="types-table hidden" id="typesTable"></div>
+                        </div>
+                    </div>
+                    <div class="ws-options">
+                        <label class="check">Root name <input type="text" class="opt-field" id="typesRootName" value="Root" maxlength="40" spellcheck="false"></label>
+                        <label class="check">Declare as
+                            <select class="opt-field" id="typesStyle">
+                                <option value="interface">interface</option>
+                                <option value="type">type alias</option>
+                            </select>
+                        </label>
+                        <label class="check"><input type="checkbox" id="typesExport" checked> Add <code>export</code></label>
+                        <span class="hint">Fields missing from some array items become optional (<code>?</code>).</span>
+                    </div>
+                    <div class="ws-actions">
+                        <button class="btn btn-primary" id="generateTypesButton"><i class="fas fa-sitemap"></i> Generate types</button>
+                    </div>
+                </div>
+
                 <!-- Delimiter Replacer -->
                 <div class="tool-workspace" id="ws-delimiter">
                     <div class="ws-head">
@@ -904,6 +978,7 @@
             { id: 'json-lint', title: 'JSON Lint & Beautify', desc: 'Validate and format your JSON for better readability.', icon: 'fa-code', color: 'purple' },
             { id: 'json-string', title: 'JSON to String / String to JSON', desc: 'Convert between JSON and string formats in seconds.', icon: 'fa-exchange-alt', color: 'amber' },
             { id: 'json-compare', title: 'JSON Compare', desc: 'Compare two JSON documents and see exactly what changed.', icon: 'fa-not-equal', color: 'blue' },
+            { id: 'json-types', title: 'JSON Type Inspector', desc: 'See the type of every field and generate TypeScript types.', icon: 'fa-sitemap', color: 'purple' },
             { id: 'delimiter', title: 'Delimiter Replacer', desc: 'Replace delimiters in your text with ease.', icon: 'fa-list', color: 'green' },
             { id: 'qr', title: 'QR Code Generator', desc: 'Create QR codes for your text, links or data.', icon: 'fa-qrcode', color: 'purple' },
             { id: 'markdown', title: 'Markdown Live Preview', desc: 'Write Markdown and see the result with HTML export.', icon: 'fa-markdown', color: 'green', brand: true },
@@ -1105,6 +1180,7 @@
             document.getElementById('compareRightInput').value = '';
             document.getElementById('compareIgnoreOrderOption').checked = false;
             resetDiffResults();
+            resetTypeInspector();
             copyStringifyResultButton.classList.add('hidden');
 
             document.getElementById('textInputToReplace').value = '';
@@ -1467,6 +1543,225 @@
         });
 
         document.getElementById('copyDiffReportButton').addEventListener('click', () => copyToClipboard(lastDiffReport, 'Report copied to clipboard!'));
+
+        // ================= JSON Type Inspector =================
+        // A type is { members: [...] } (a union). Members are { k: 'string'|'number'|'boolean'|'null' },
+        // { k: 'object', props: Map<key, { type, optional }> } or { k: 'array', element: type|null }.
+        const TYPE_ORDER = { string: 0, number: 1, boolean: 2, object: 3, array: 4, null: 5 };
+
+        function inferType(v) {
+            if (v === null) return { members: [{ k: 'null' }] };
+            if (Array.isArray(v)) {
+                return { members: [{ k: 'array', element: v.length ? mergeTypes(v.map(inferType)) : null }] };
+            }
+            if (typeof v === 'object') {
+                const props = new Map();
+                for (const key of Object.keys(v)) props.set(key, { type: inferType(v[key]), optional: false });
+                return { members: [{ k: 'object', props }] };
+            }
+            return { members: [{ k: typeof v }] };
+        }
+
+        // Unions several types into one: primitives are de-duplicated, objects and arrays are merged.
+        function mergeTypes(types) {
+            const prims = new Set();
+            const objs = [], arrs = [];
+            for (const t of types) {
+                for (const m of t.members) {
+                    if (m.k === 'object') objs.push(m);
+                    else if (m.k === 'array') arrs.push(m);
+                    else prims.add(m.k);
+                }
+            }
+            const members = [...prims].map(k => ({ k }));
+            if (objs.length) members.push(mergeObjects(objs));
+            if (arrs.length) {
+                const elements = arrs.map(a => a.element).filter(Boolean);
+                members.push({ k: 'array', element: elements.length ? mergeTypes(elements) : null });
+            }
+            return { members: members.sort((a, b) => TYPE_ORDER[a.k] - TYPE_ORDER[b.k]) };
+        }
+
+        // Merges object shapes; a key absent from any of them becomes optional.
+        function mergeObjects(objs) {
+            const keys = new Set();
+            objs.forEach(o => o.props.forEach((_, k) => keys.add(k)));
+            const props = new Map();
+            for (const k of keys) {
+                const present = objs.filter(o => o.props.has(k));
+                props.set(k, {
+                    type: mergeTypes(present.map(o => o.props.get(k).type)),
+                    optional: present.length < objs.length || present.some(o => o.props.get(k).optional),
+                });
+            }
+            return { k: 'object', props };
+        }
+
+        // Short labels for the field table, e.g. [{label:'string'},{label:'null'}] or 'object[]'.
+        function summarizeType(type) {
+            return type.members.map(m => {
+                if (m.k === 'object') return { label: 'object', cls: 'object' };
+                if (m.k === 'array') {
+                    if (!m.element) return { label: 'unknown[]', cls: 'array' };
+                    const inner = summarizeType(m.element).map(x => x.label);
+                    return { label: inner.length > 1 ? `(${inner.join(' | ')})[]` : `${inner[0]}[]`, cls: 'array' };
+                }
+                return { label: m.k, cls: m.k };
+            });
+        }
+
+        // Flattens the type tree into rows of { path, chips, optional }; arrays use "[]" in the path.
+        function collectFields(type, path, rows) {
+            type.members.forEach(m => {
+                if (m.k === 'object') {
+                    m.props.forEach((p, key) => {
+                        const fieldPath = childPath(path, key);
+                        rows.push({ path: fieldPath, chips: summarizeType(p.type), optional: p.optional });
+                        collectFields(p.type, fieldPath, rows);
+                    });
+                } else if (m.k === 'array' && m.element) {
+                    collectFields(m.element, path + '[]', rows);
+                }
+            });
+            return rows;
+        }
+
+        function toPascalName(key) {
+            const parts = String(key).split(/[^A-Za-z0-9]+/).filter(Boolean);
+            let name = parts.map(p => p[0].toUpperCase() + p.slice(1)).join('');
+            if (!name) name = 'Item';
+            return /^\d/.test(name) ? '_' + name : name;
+        }
+
+        // Name for the items of an array field: "users" -> "user", "status" -> "statusItem".
+        function singularName(name) {
+            let s = name;
+            if (/[^aeiou]ies$/i.test(name)) s = name.slice(0, -3) + 'y';
+            else if (/(ss|us|is)$/i.test(name)) s = name;
+            else if (/s$/i.test(name) && name.length > 1) s = name.slice(0, -1);
+            return s === name ? name + 'Item' : s;
+        }
+
+        function generateTypeScript(root, rootName, { asInterface = true, exportKw = true } = {}) {
+            const prefix = exportKw ? 'export ' : '';
+            const decls = [];
+            const used = new Set();
+            const unique = base => { let n = base, i = 2; while (used.has(n)) n = base + i++; used.add(n); return n; };
+            const keyName = k => /^[A-Za-z_$][\w$]*$/.test(k) ? k : JSON.stringify(k);
+
+            function renderType(type, hint) {
+                return type.members.map(m => {
+                    if (m.k === 'object') return renderObject(m, hint);
+                    if (m.k === 'array') {
+                        if (!m.element) return 'unknown[]';
+                        const inner = renderType(m.element, singularName(hint));
+                        return inner.includes('|') ? `(${inner})[]` : `${inner}[]`;
+                    }
+                    return m.k;
+                }).join(' | ');
+            }
+
+            function renderObject(obj, hint) {
+                if (obj.props.size === 0) return 'Record<string, unknown>';
+                const name = unique(toPascalName(hint));
+                const slot = decls.push('') - 1; // reserve the slot so parents are listed before their children
+                const lines = [];
+                obj.props.forEach((p, key) => {
+                    lines.push(`  ${keyName(key)}${p.optional ? '?' : ''}: ${renderType(p.type, key)};`);
+                });
+                decls[slot] = asInterface
+                    ? `${prefix}interface ${name} {\n${lines.join('\n')}\n}`
+                    : `${prefix}type ${name} = {\n${lines.join('\n')}\n};`;
+                return name;
+            }
+
+            const base = toPascalName(rootName.trim() || 'Root');
+            const rootIsObject = root.members.length === 1 && root.members[0].k === 'object' && root.members[0].props.size > 0;
+            if (rootIsObject) {
+                renderType(root, base);
+            } else {
+                const alias = unique(base);
+                const body = renderType(root, base);
+                decls.unshift(`${prefix}type ${alias} = ${body};`);
+            }
+            return decls.join('\n\n');
+        }
+
+        // ----- Type Inspector UI -----
+        let typesRoot = null;
+        let typesTab = 'ts';
+        let typesFieldsText = '';
+
+        function setTypesTab(tab) {
+            typesTab = tab;
+            document.getElementById('typesTabTs').classList.toggle('active', tab === 'ts');
+            document.getElementById('typesTabFields').classList.toggle('active', tab === 'fields');
+            document.getElementById('typesTsOutput').classList.toggle('hidden', tab !== 'ts');
+            document.getElementById('typesTable').classList.toggle('hidden', tab !== 'fields');
+            document.getElementById('downloadTypesButton').classList.toggle('hidden', tab !== 'ts' || !typesRoot);
+        }
+
+        function resetTypeInspector() {
+            typesRoot = null;
+            typesFieldsText = '';
+            document.getElementById('typesInput').value = '';
+            document.getElementById('typesTsOutput').value = '';
+            document.getElementById('typesTable').innerHTML = '';
+            document.getElementById('typesRootName').value = 'Root';
+            document.getElementById('typesStyle').value = 'interface';
+            document.getElementById('typesExport').checked = true;
+            document.getElementById('copyTypesButton').classList.add('hidden');
+            setTypesTab('ts');
+        }
+
+        function renderTypesOutput() {
+            if (!typesRoot) return;
+            document.getElementById('typesTsOutput').value = generateTypeScript(typesRoot, document.getElementById('typesRootName').value, {
+                asInterface: document.getElementById('typesStyle').value === 'interface',
+                exportKw: document.getElementById('typesExport').checked,
+            });
+
+            const rows = [{ path: '$', chips: summarizeType(typesRoot), optional: false }];
+            collectFields(typesRoot, '$', rows);
+            const table = document.getElementById('typesTable');
+            table.innerHTML = '';
+            rows.forEach(r => {
+                const row = makeEl('div', 'type-row');
+                row.appendChild(makeEl('code', 'type-path', r.path));
+                const chips = makeEl('span', 'type-chips');
+                r.chips.forEach(c => chips.appendChild(makeEl('span', 'type-chip ' + c.cls, c.label)));
+                if (r.optional) chips.appendChild(makeEl('span', 'opt-tag', 'optional'));
+                row.appendChild(chips);
+                table.appendChild(row);
+            });
+            typesFieldsText = rows.map(r => `${r.path}: ${r.chips.map(c => c.label).join(' | ')}${r.optional ? ' (optional)' : ''}`).join('\n');
+
+            document.getElementById('copyTypesButton').classList.remove('hidden');
+            setTypesTab(typesTab);
+        }
+
+        document.getElementById('generateTypesButton').addEventListener('click', () => {
+            const raw = document.getElementById('typesInput').value.trim();
+            if (!raw) return showMessage('Please paste JSON first.', 'info');
+            let data;
+            try { data = JSON.parse(raw); }
+            catch (err) { return showMessage('Invalid JSON: ' + err.message, 'error'); }
+            typesRoot = inferType(data);
+            renderTypesOutput();
+            showMessage('Types generated!', 'success');
+        });
+
+        ['typesRootName', 'typesStyle', 'typesExport'].forEach(id => {
+            const el = document.getElementById(id);
+            el.addEventListener(el.type === 'text' ? 'input' : 'change', renderTypesOutput);
+        });
+        document.getElementById('typesTabTs').addEventListener('click', () => setTypesTab('ts'));
+        document.getElementById('typesTabFields').addEventListener('click', () => setTypesTab('fields'));
+        document.getElementById('copyTypesButton').addEventListener('click', () => {
+            if (typesTab === 'ts') copyToClipboard(document.getElementById('typesTsOutput').value, 'TypeScript copied to clipboard!');
+            else copyToClipboard(typesFieldsText, 'Field types copied to clipboard!');
+        });
+        document.getElementById('downloadTypesButton').addEventListener('click', () => downloadText(document.getElementById('typesTsOutput').value, 'types.ts', 'text/plain'));
 
         // ================= Delimiter Replacer =================
         const copyReplacedTextButton = document.getElementById('copyReplacedTextButton');
